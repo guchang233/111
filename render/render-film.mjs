@@ -1,5 +1,6 @@
 // Render the film: parallel headless pages → JPEG frames piped into ffmpeg → chunks → concat + audio + grain.
-// node render/render-film.mjs [--from 0] [--to <dur>] [--scale 1] [--workers 4] [--out out/film/draft.mp4] [--crf 18]
+// node render/render-film.mjs [--from 0] [--to <dur>] [--scale 1] [--workers 4] [--out out/film/draft.mp4] [--crf 18] [--grain 3]
+//   --mux-only: skip rendering, re-encode the chunks already in <out>.parts (e.g. to change grain or crf)
 import fs from 'node:fs';
 import path from 'node:path';
 import { spawn } from 'node:child_process';
@@ -15,6 +16,7 @@ const timeline = JSON.parse(fs.readFileSync(path.join(ROOT, 'film/data/timeline.
 const fps = timeline.fps, dur = Number(arg('to', timeline.duration)), from = Number(arg('from', 0));
 const f0 = Math.round(from * fps), f1 = Math.round(dur * fps);
 const total = f1 - f0;
+const muxOnly = process.argv.includes('--mux-only');
 const server = await serve();
 const url = `http://127.0.0.1:${server.address().port}/film/index.html`;
 const browser = await chromium.launch({ args: ['--disable-gpu-vsync', '--disable-frame-rate-limit'] });
@@ -45,18 +47,23 @@ async function work(w, a, b) {
   return file;
 }
 
-const per = Math.ceil(total / workers);
-const jobs = [];
-for (let w = 0; w < workers; w++) {
-  const a = f0 + w * per, b = Math.min(f1, a + per);
-  if (a < b) jobs.push(work(w, a, b));
+if (!muxOnly) {
+  const per = Math.ceil(total / workers);
+  const jobs = [];
+  for (let w = 0; w < workers; w++) {
+    const a = f0 + w * per, b = Math.min(f1, a + per);
+    if (a < b) jobs.push(work(w, a, b));
+  }
+  const parts = await Promise.all(jobs);
+  fs.writeFileSync(path.join(tmp, 'list.txt'), parts.map((p) => `file '${p}'`).join('\n'));
 }
-const parts = await Promise.all(jobs);
 await browser.close(); server.close();
-fs.writeFileSync(path.join(tmp, 'list.txt'), parts.map((p) => `file '${p}'`).join('\n'));
 const audio = path.join(ROOT, 'out/audio/master.wav');
-const g = Number(arg('grain', scale >= 2 ? 4 : 3));          // light temporal dither: breaks banding, survives B站 transcoding
-const grain = g > 0 ? `noise=c0s=${g}:c0f=t+u` : 'null';
+// light static dither on luma: breaks banding in the dark gradients and survives B站 transcoding.
+// The pattern is the same every frame, so it costs bits only in keyframes (a temporal grain at 4K
+// made the file ~10× larger and the encode ~4× slower).
+const g = Number(arg('grain', scale >= 2 ? 4 : 3));
+const grain = g > 0 ? `noise=c0s=${g}:c0f=u` : 'null';
 const args = ['-y', '-loglevel', 'error', '-f', 'concat', '-safe', '0', '-i', path.join(tmp, 'list.txt'),
   '-ss', String(from), '-t', String(dur - from), '-i', audio,
   '-map', '0:v', '-map', '1:a', '-vf', `${grain},format=yuv420p`,

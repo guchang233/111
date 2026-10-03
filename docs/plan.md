@@ -39,6 +39,16 @@ Sincerely 两段之间是一个阻碍终止（C/E → Dm），所以两段可以
 | 02:56 | | 终章 · 曼陀罗 |
 | 03:23 | | 莱布尼茨：「音乐，是心灵在不知不觉中进行的计数。」接着是「也许打动你的，正是这份不知不觉。」，然后片尾 |
 
+## 纯享版（3:43）
+
+同一套场景加上 `?pure` 参数：画面上不出现任何文字，曲子和特效之外什么都没有。
+
+- 去掉标题卡和两段题词，每两个乐章之间只停 2.6 秒
+- 和弦钟与曼陀罗移到画面正中，因为旁边不再有文字
+- 打字信里的音名改成光点：位置不变，按音高上下错开，每一行仍然连成旋律的轮廓
+- 单独的时间轴 `film/data/timeline_pure.json` 和音轨 `out/audio/master_pure.wav`（不含标题卡的低音轰鸣）
+- 署名移到简介里
+
 ## 设计系统
 
 - **场景底色**：墨黑 `#0b0b0c`（EVA、Sincerely）、夜色渐变（芙莉莲）
@@ -71,6 +81,11 @@ node render/render-film.mjs --workers 4 --grain 3 --crf 20 --out out/film/draft.
 node render/render-film.mjs --workers 4 --scale 2 --grain 4 --crf 16 --out out/film/final-4k.mp4    # 4K 终版
 node render/film-stills.mjs 40 135 166 --only atfield,flowers,magic                                  # 单帧检查
 SCALE=1 node render/render-stills.mjs render/covers/cover-16x9.html render/covers/cover-4x3.html    # 封面
+
+# 纯享版：音轨、成片、封面
+cd scripts && python3 build_audio.py --pure && cd ..
+node render/render-film.mjs --pure --workers 4 --scale 2 --grain 4 --crf 16 --out out/film/pure-4k.mp4
+SCALE=1 node render/render-stills.mjs "render/covers/cover-16x9.html?pure" "render/covers/cover-4x3.html?pure"
 ```
 
 MIDI 和由 MIDI 导出的音符数据都不进仓库。

@@ -115,6 +115,7 @@ def main():
     tl = film_timeline.build()
     C = tl['cues']
     dump('timeline.json', tl)
+    dump('timeline_pure.json', film_timeline.build(pure=True))
 
     # ---- EVA intro: arpeggios, ritardando, pause (film time = segment time) ----
     s = segments.song('eva')

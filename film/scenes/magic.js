@@ -2,7 +2,7 @@
 // circle; the twelve rotating circles carry the measured recipe of a piano tone, turn at the speed of
 // the sounding melody note and swell when it is struck; to the right, its waveform (higher notes pack
 // more cycles in).
-import { C, el, show, html, text, env, clamp, rgba, N, prog, ease } from '../lib.js';
+import { C, el, show, html, text, env, clamp, rgba, N, prog, ease, PURE } from '../lib.js';
 
 const GOLD = '#cdb986', WHITE = '#ece7de';
 const CX = 640, CY = 566, R0 = 352, R1 = 330, R2 = 298, R3 = 272, K = 118;
@@ -18,7 +18,7 @@ export default {
     st.parts = D.a4.partials;                       // [[freq, amp], ...] measured from the A4 sample
     st.amp = st.parts.map((p) => p[1]);
     st.ph = st.amp.map((_, i) => 0.37 * (i + 1));    // the same phases the soundtrack uses
-    st.src = el(ui, 'div', 'a kicker', 'III &nbsp;·&nbsp; 葬送的芙莉莲 · 组曲 &nbsp;·&nbsp; 钢琴改编 ANIMENZ', { left: '120px', top: '104px' });
+    st.src = PURE ? null : el(ui, 'div', 'a kicker', 'III &nbsp;·&nbsp; 葬送的芙莉莲 · 组曲 &nbsp;·&nbsp; 钢琴改编 ANIMENZ', { left: '120px', top: '104px' });
     // the melody's phase, integrated so the circles turn at the speed of the sounding note; the
     // trace's cycles-per-width glides to each new note; the swell follows each strike
     const mel = [];
@@ -36,6 +36,7 @@ export default {
     }
     // inscription ring: the measured recipe of the A4, written around the circle
     const Rt = (R1 + R2) / 2 - 5;
+    if (PURE) return;
     const words = st.parts.map((p, i) => `${i + 1}f · ${p[1].toFixed(3)}`).join('   ◦   ') + '   ◦   ';
     st.ring = el(ui, 'div', 'a', `<svg width="${2 * R0}" height="${2 * R0}" viewBox="${-R0} ${-R0} ${2 * R0} ${2 * R0}" style="overflow:visible">
       <defs><path id="insc" d="M ${-Rt} 0 a ${Rt} ${Rt} 0 1 1 ${2 * Rt} 0 a ${Rt} ${Rt} 0 1 1 ${-2 * Rt} 0"/></defs>
@@ -73,8 +74,8 @@ export default {
       ctx.beginPath(); ctx.moveTo(R3 * Math.cos(a), R3 * Math.sin(a)); ctx.lineTo(R3 * Math.cos(b), R3 * Math.sin(b)); ctx.stroke();
     }
     ctx.restore();
-    st.ring.style.transform = `rotate(${(-rot * 180 / Math.PI).toFixed(3)}deg)`;
-    show(st.ring, fullIn * fade);
+    if (st.ring) st.ring.style.transform = `rotate(${(-rot * 180 / Math.PI).toFixed(3)}deg)`;
+    if (st.ring) show(st.ring, fullIn * fade);
 
     // ---- the theme: each note blooms where its pitch lives (A at the top) ----
     const thVis = fade;
@@ -134,6 +135,6 @@ export default {
       ctx.beginPath(); ctx.moveTo(WX, CY); ctx.lineTo(WX + WW, CY); ctx.stroke();
       ctx.fillStyle = rgba(WHITE, ep); ctx.beginPath(); ctx.arc(WX, tipY, 3.4, 0, Math.PI * 2); ctx.fill();
     }
-    show(st.src, env(t, Cq.fri_a + 0.2, Cq.reb, 0.6, 0.6));
+    if (st.src) show(st.src, env(t, Cq.fri_a + 0.2, Cq.reb, 0.6, 0.6));
   },
 };

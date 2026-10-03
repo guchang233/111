@@ -13,6 +13,7 @@
   .songs { left: 108px; top: 724px; font-family: var(--serif-cn); font-weight: 500; font-size: 30px; letter-spacing: 0.12em; color: rgba(242,238,230,0.78); }
   .songs i { font-style: normal; color: var(--eva); margin: 0 14px; }
   .by { left: 110px; top: 196px; font-family: var(--mono); font-size: 22px; letter-spacing: 0.3em; color: rgba(242,238,230,0.55); }
+  .pure { display: inline-block; margin-left: 26px; padding: 5px 12px 6px 16px; border: 1.5px solid var(--eva); font-family: var(--serif-cn); font-weight: 500; font-size: 22px; letter-spacing: 0.3em; color: var(--eva); vertical-align: 2px; }
 </style>
 </head>
 <body class="dark">
@@ -23,6 +24,8 @@
   <div class="abs songs">EVA<i>/</i>紫罗兰永恒花园<i>/</i>葬送的芙莉莲</div>
 <script type="module">
   import { fontsReady, grain, ready } from '/render/lib/frame.js';
+  // ?pure: the 纯享版 cover, stamped
+  if (location.search.includes('pure')) document.querySelector('.by').insertAdjacentHTML('beforeend', '<span class="pure">纯享版</span>');
   const NS = 'http://www.w3.org/2000/svg';
   const svg = document.getElementById('kb');
   const el = (tag, a) => { const e = document.createElementNS(NS, tag); for (const k in a) e.setAttribute(k, a[k]); svg.appendChild(e); return e; };
@@ -49,7 +52,7 @@
   el('text', { x: wx(0) - 10, y: Y0 + 96, 'text-anchor': 'end', 'font-family': 'Cormorant Garamond', 'font-style': 'italic', 'font-weight': 400, 'font-size': 36, fill: '#e8502e' }).textContent = 'Hz';
   await fontsReady([
     ['900 300px "Noto Serif SC"', '把三首歌拆到只剩数字'],
-    ['500 34px "Noto Serif SC"', 'EVA/紫罗兰永恒花园葬送的芙莉莲'],
+    ['500 34px "Noto Serif SC"', 'EVA/紫罗兰永恒花园葬送的芙莉莲纯享版'],
     ['400 20px "IBM Plex Mono"', 'ANIMENZ × 3 · 4K 0123456789.'],
     ['italic 400 36px "Cormorant Garamond"', 'Hz'],
   ]);

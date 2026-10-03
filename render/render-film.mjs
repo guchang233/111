@@ -1,5 +1,6 @@
 // Render the film: parallel headless pages → JPEG frames piped into ffmpeg → chunks → concat + audio + grain.
 // node render/render-film.mjs [--from 0] [--to <dur>] [--scale 1] [--workers 4] [--out out/film/draft.mp4] [--crf 18] [--grain 3]
+//   --pure: the 纯享版 (no words on screen; its own timeline and audio master)
 //   --mux-only: skip rendering, re-encode the chunks already in <out>.parts (e.g. to change grain or crf)
 import fs from 'node:fs';
 import path from 'node:path';
@@ -12,13 +13,14 @@ const scale = Number(arg('scale', 1)), workers = Number(arg('workers', 4)), crf 
 const out = path.resolve(ROOT, arg('out', 'out/film/draft.mp4'));
 const tmp = out.replace(/\.mp4$/, '') + '.parts';
 fs.mkdirSync(tmp, { recursive: true });
-const timeline = JSON.parse(fs.readFileSync(path.join(ROOT, 'film/data/timeline.json')));
+const pure = process.argv.includes('--pure');
+const timeline = JSON.parse(fs.readFileSync(path.join(ROOT, `film/data/timeline${pure ? '_pure' : ''}.json`)));
 const fps = timeline.fps, dur = Number(arg('to', timeline.duration)), from = Number(arg('from', 0));
 const f0 = Math.round(from * fps), f1 = Math.round(dur * fps);
 const total = f1 - f0;
 const muxOnly = process.argv.includes('--mux-only');
 const server = await serve();
-const url = `http://127.0.0.1:${server.address().port}/film/index.html`;
+const url = `http://127.0.0.1:${server.address().port}/film/index.html${pure ? '?pure' : ''}`;
 const browser = await chromium.launch({ args: ['--disable-gpu-vsync', '--disable-frame-rate-limit'] });
 const t0 = Date.now();
 let done = 0;
@@ -58,7 +60,7 @@ if (!muxOnly) {
   fs.writeFileSync(path.join(tmp, 'list.txt'), parts.map((p) => `file '${p}'`).join('\n'));
 }
 await browser.close(); server.close();
-const audio = path.join(ROOT, 'out/audio/master.wav');
+const audio = path.join(ROOT, `out/audio/master${pure ? '_pure' : ''}.wav`);
 // light static dither on luma: breaks banding in the dark gradients and survives B站 transcoding.
 // The pattern is the same every frame, so it costs bits only in keyframes (a temporal grain at 4K
 // made the file ~10× larger and the encode ~4× slower).

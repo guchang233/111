@@ -1,5 +1,5 @@
 // The song, whole: the EVA phrase as a scrolling piano roll. Played notes burn bright, the score ahead waits.
-import { C, el, show, html, env, clamp, rgba, N } from '../lib.js';
+import { C, el, show, html, env, clamp, rgba, N, PURE } from '../lib.js';
 
 export default {
   bg: 'dark',
@@ -7,7 +7,7 @@ export default {
     const st = L.st;
     st.notes = D.eva_phrase.notes.map(N);
     st.chords = D.eva_phrase.chords;
-    el(L.ui, 'div', 'a kicker', 'I &nbsp;·&nbsp; 残酷天使的行动纲领 &nbsp;·&nbsp; 钢琴改编 ANIMENZ', { left: '120px', top: '104px' });
+    if (!PURE) el(L.ui, 'div', 'a kicker', 'I &nbsp;·&nbsp; 残酷天使的行动纲领 &nbsp;·&nbsp; 钢琴改编 ANIMENZ', { left: '120px', top: '104px' });
   },
   draw(L, t, D) {
     const ctx = L.ctx, st = L.st;
@@ -47,6 +47,7 @@ export default {
     ctx.strokeStyle = rgba(C.ivoryHi, 0.55); ctx.lineWidth = 1;
     ctx.beginPath(); ctx.moveTo(PX, 190); ctx.lineTo(PX, 890); ctx.stroke();
     // chord names riding under the roll
+    if (PURE) return;
     ctx.font = '400 19px "IBM Plex Mono"'; ctx.textBaseline = 'alphabetic';
     for (const c of st.chords) {
       const x = xOf(c.t);

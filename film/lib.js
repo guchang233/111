@@ -1,6 +1,8 @@
 // Shared helpers for film scenes. Everything is a pure function of time: no timers, no CSS animation.
 
 export const W = 1920, H = 1080;
+// 纯享版 (?pure): the same film with no words on screen — only the music and what it draws
+export const PURE = new URLSearchParams(location.search).has('pure');
 export const C = {
   ink: '#0b0b0c', ivory: '#ece7de', ivoryHi: '#f2eee6', paper: '#ece7dd', paperInk: '#171615',
   eva: '#e8502e', violet: '#2f7d62', violetHi: '#58b28f', frieren: '#cdb986', mark: '#c3402e',

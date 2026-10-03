@@ -151,8 +151,8 @@ def additive_a4(partials, dur, drops=(), f0=440.0, fade_in=1.6):
 
 
 # -------------------------------------------------------------------- build ----
-def build():
-    tl = film_timeline.build(); C = tl['cues']
+def build(pure=False):
+    tl = film_timeline.build(pure); C = tl['cues']
     P = Bus(tl['duration'])        # piano (reverb: hall)
     S = Bus(tl['duration'])        # synth (lighter reverb)
     L = film_timeline.seg_len
@@ -161,7 +161,8 @@ def build():
     # I · EVA: the opening as written, then straight into the chorus
     P.add(piano_window('eva', 0.0, L('eva'), gain_fn=lambda n: 4.0 if n['start'] < eva_t(17) else 1.5,
                        tail=2.0, lift_at_end=True), C['eva_start'])
-    S.add(sub_boom(), C['title_in'], 0.35)
+    if not pure:                                  # the boom belongs to the title card
+        S.add(sub_boom(), C['title_in'], 0.35)
     P.add(fade(piano_window('eva_chorus', 0.0, L('eva_chorus'), tail=4.2), 0.0, 1.8), C['eva_ch'], GAIN['eva_chorus'])
 
     # II · Sincerely: first chorus, then the deceptive cadence drops into the final climax
@@ -180,9 +181,10 @@ def build():
     mix = p + s
     n = int((tl['duration'] + 0.5) * SR)
     mix = mix[:n]
-    raw = os.path.join(OUT, 'master_raw.wav')
+    sfx = '_pure' if pure else ''
+    raw = os.path.join(OUT, f'master_raw{sfx}.wav')
     piano.write(raw, mix, peak_db=-3.0)
-    final = os.path.join(OUT, 'master.wav')
+    final = os.path.join(OUT, f'master{sfx}.wav')
     # Mastering: one linear gain to -15 LUFS, then a fast limiter that only shaves piano transients.
     # (loudnorm falls back to dynamic compression whenever a linear gain would clip, which reshapes the
     # balance between sections; this keeps the mix exactly as balanced above.)
@@ -203,4 +205,5 @@ GAIN = {'eva_chorus': 0.62, 'sin_a': 0.8, 'sincerely': 0.5, 'fri_d': 0.75, 'frie
 
 
 if __name__ == '__main__':
-    build()
+    import sys
+    build(pure='--pure' in sys.argv)

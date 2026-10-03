@@ -1,11 +1,12 @@
 // Cold open: the EVA intro arpeggios appear as a constellation; Kaworu's line; the tempo slows into numbers.
-import { C, el, show, text, env, clamp, rgba, N, prog } from '../lib.js';
+import { C, el, show, text, env, clamp, rgba, N, prog, PURE } from '../lib.js';
 
 export default {
   bg: 'dark',
   init(L, D) {
     const ui = L.ui;
-    L.st.notes = D.eva_intro.notes.map(N).filter((n) => n.s < D.C.title_in);
+    L.st.notes = D.eva_intro.notes.map(N).filter((n) => n.s < (PURE ? D.C.phrase : D.C.title_in));
+    if (PURE) return;
     L.st.epi = el(ui, 'div', 'a vert', '歌真是好东西啊。', {
       right: '230px', top: '250px', fontWeight: 300, fontSize: '50px', letterSpacing: '0.34em', color: '#eee9e0',
     });
@@ -21,7 +22,7 @@ export default {
     const ctx = L.ctx, st = L.st, Cq = D.C;
     const xOf = (s) => 200 + (s / 15.5) * 1260;
     const yOf = (p) => 900 - ((p - 36) / (98 - 36)) * 700;
-    const dim = 1 - 0.55 * prog(t, Cq.eva_pause, Cq.title_in);
+    const dim = PURE ? 1 : 1 - 0.55 * prog(t, Cq.eva_pause, Cq.title_in);
     // constellation lines between consecutive notes of the same hand
     ctx.lineWidth = 0.7;
     for (const tr of [0, 1]) {
@@ -29,7 +30,7 @@ export default {
       for (const n of st.notes) {
         if (n.tr !== tr) continue;
         if (n.s > t) break;
-        if (prev) {
+        if (prev && n.s - prev.s < 0.9) {                // no strokes across the pause
           const a = clamp((t - n.s) / 0.25) * 0.24 * dim;
           ctx.strokeStyle = rgba(C.ivory, a);
           ctx.beginPath(); ctx.moveTo(xOf(prev.s), yOf(prev.p)); ctx.lineTo(xOf(n.s), yOf(n.p)); ctx.stroke();
@@ -53,6 +54,7 @@ export default {
       ctx.fillStyle = rgba(C.ivoryHi, a);
       ctx.beginPath(); ctx.arc(x, y, r, 0, Math.PI * 2); ctx.fill();
     }
+    if (PURE) return;
     show(st.epi, env(t, 0.7, 9.3, 1.4, 0.9));
     show(st.who, env(t, 1.6, 9.3, 1.4, 0.9));
     // tempo readout during the ritardando

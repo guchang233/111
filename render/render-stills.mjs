@@ -40,7 +40,8 @@ const server = await serve();
 const port = server.address().port;
 const browser = await chromium.launch();
 for (const f of frames) {
-  const html = fs.readFileSync(path.join(ROOT, f), 'utf8');
+  const [file, query] = f.split('?');                 // e.g. render/covers/cover-16x9.html?pure
+  const html = fs.readFileSync(path.join(ROOT, file), 'utf8');
   const m = html.match(/name="frame-size"\s+content="(\d+)x(\d+)"/);
   const [width, height] = m ? [Number(m[1]), Number(m[2])] : [1920, 1080];
   const page = await browser.newPage({ viewport: { width, height }, deviceScaleFactor: scale });
@@ -48,7 +49,7 @@ for (const f of frames) {
   page.on('pageerror', (err) => console.error(`  [${path.basename(f)}] ERROR ${err.message}`));
   await page.goto(`http://127.0.0.1:${port}/${f}`);
   await page.waitForFunction(() => window.__ready === true, null, { timeout: 120000 });
-  const name = path.basename(f, '.html');
+  const name = path.basename(file, '.html') + (query ? '-' + query : '');
   const out = path.join(outDir, `${name}.png`);
   await page.screenshot({ path: out, clip: { x: 0, y: 0, width, height } });
   await page.close();

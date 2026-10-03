@@ -1,8 +1,8 @@
 // Finale: Frieren's suite closes as a mandala, every note drawn at its moment (angle) and pitch (radius).
-import { C, el, show, html, env, clamp, rgba, N, prog, ease } from '../lib.js';
+import { C, el, show, html, env, clamp, rgba, N, prog, ease, PURE } from '../lib.js';
 
 const GOLD = '#cdb986', WHITE = '#ece7de';
-const CX = 700, CY = 540;
+const CX = PURE ? 960 : 700, CY = 540;               // centred when there are no words beside it
 
 export default {
   bg: 'night',
@@ -11,6 +11,7 @@ export default {
     st.notes = D.frieren_b.notes.map(N);
     st.T = Cq.reb_src[1] - Cq.reb_src[0];
     st.bars = D.frieren_b.bars;
+    if (PURE) return;
     const vq = { top: '210px', fontWeight: 300, fontSize: '46px', letterSpacing: '0.32em', lineHeight: 2.2, color: '#eee9e0' };
     st.q1 = el(ui, 'div', 'a vert', '音乐，是心灵<br>在不知不觉中进行的计数。', { right: '250px', ...vq });
     st.q1w = el(ui, 'div', 'a vert', '莱布尼茨　一七一二年', { right: '476px', top: '560px', fontSize: '19px', letterSpacing: '0.42em', color: 'rgba(236,231,222,0.5)' });
@@ -72,6 +73,7 @@ export default {
       ctx.strokeStyle = rgba(GOLD, 0.35 * climax * out); ctx.lineWidth = 1.2;
       ctx.beginPath(); ctx.arc(CX, CY, rad(98), 0, Math.PI * 2); ctx.stroke();
     }
+    if (PURE) return;
     show(st.q1, env(t, Cq.quote, Cq.line - 0.3, 1.2, 0.8));
     show(st.q1w, env(t, Cq.quote + 1.0, Cq.line - 0.3, 1.0, 0.8));
     show(st.q2, env(t, Cq.line, Cq.credits - 0.2, 1.2, 0.8));

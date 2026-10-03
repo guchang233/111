@@ -1,5 +1,8 @@
 """Master timeline of the film (v3: a music showcase in three movements).
 
+build(pure=True) is the 纯享版: no title card, no epigraphs, no words at all; the movements follow
+one another after a short breath instead of pausing for the epigraphs.
+
 One source of truth for picture (exported to JSON) and sound. All times are film seconds;
 music cue times are derived from the MIDI windows in segments.py, so the picture lands on the notes.
 """
@@ -20,7 +23,7 @@ def seg_len(name):
     return b - a
 
 
-def build():
+def build(pure=False):
     T = {}
     # ---- I · EVA ----------------------------------------------------------------------
     T['eva_start'] = 0.0
@@ -36,7 +39,7 @@ def build():
 
     # ---- II · Sincerely ------------------------------------------------------------------
     T['epi_violet'] = T['eva_ch_end'] + 1.6
-    T['sin_a'] = T['epi_violet'] + 3.9
+    T['sin_a'] = T['eva_ch_end'] + 2.6 if pure else T['epi_violet'] + 3.9
     T['sin_a_bars'] = [T['sin_a'] + bar_time('sin_a', b) for b in range(60, 77)]
     T['sin_b'] = T['sin_a'] + seg_len('sin_a')                    # C/E → Dm: the deceptive cadence joins them
     T['sin_b_bars'] = [T['sin_b'] + bar_time('sincerely', b) for b in range(216, 233)]
@@ -44,7 +47,7 @@ def build():
 
     # ---- III · Frieren --------------------------------------------------------------------
     T['epi_frieren'] = T['sin_b_end'] + 1.4
-    T['fri_d'] = T['epi_frieren'] + 3.9
+    T['fri_d'] = T['sin_b_end'] + 2.6 if pure else T['epi_frieren'] + 3.9
     T['fri_d_end'] = T['fri_d'] + seg_len('fri_d')
     T['fri_a'] = T['fri_d_end'] + 0.9
     T['fri_a_end'] = T['fri_a'] + seg_len('frieren_a')
@@ -70,13 +73,25 @@ def build():
         dict(id='magic', start=T['fri_a'] - 0.2, end=T['reb'] + 0.8, fade_in=0.8, fade_out=0.8),
         dict(id='rebuild', start=T['reb'], end=T['end'], fade_in=0.8, fade_out=1.2),
     ]
+    if pure:
+        scenes = [
+            dict(id='coldopen', start=0.0, end=T['phrase'] + 0.3, fade_out=0.6),
+            dict(id='whole', start=T['phrase'] - 0.3, end=T['eva_ch'], fade_in=0.6, fade_out=0.0),
+            dict(id='atfield', start=T['eva_ch'], end=T['sin_a'] + 0.4, fade_in=0.0, fade_out=1.6),
+            dict(id='letter', start=T['sin_a'] - 0.2, end=T['sin_b'] + 0.5, fade_in=0.8, fade_out=0.5),
+            dict(id='chords', start=T['sin_b'], end=T['fri_d'] + 0.2, fade_in=0.5, fade_out=1.6),
+            dict(id='flowers', start=T['fri_d'] - 0.4, end=T['fri_a'] + 0.6, fade_in=1.0, fade_out=0.9),
+            dict(id='magic', start=T['fri_a'] - 0.2, end=T['reb'] + 0.8, fade_in=0.8, fade_out=0.8),
+            dict(id='rebuild', start=T['reb'], end=T['end'], fade_in=0.8, fade_out=1.2),
+        ]
     for s in scenes:
         s.setdefault('fade_in', 0.5); s.setdefault('fade_out', 0.5)
-    return dict(fps=FPS, duration=T['end'], cues=T, scenes=scenes)
+    return dict(fps=FPS, duration=T['end'], cues=T, scenes=scenes, pure=pure)
 
 
 if __name__ == '__main__':
-    tl = build()
+    import sys
+    tl = build(pure='--pure' in sys.argv)
     for k, v in tl['cues'].items():
         if isinstance(v, float):
             print(f'{k:14s} {v:8.3f}')

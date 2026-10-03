@@ -1,5 +1,5 @@
 // Film runtime: one layer per scene, composited by the timeline. window.renderFrame(t) is pure in t.
-import { W, H, clamp, ease } from './lib.js';
+import { W, H, clamp, ease, PURE } from './lib.js';
 
 const IDS = ['coldopen', 'title', 'whole', 'atfield', 'epi_violet', 'letter', 'chords',
              'epi_frieren', 'flowers', 'magic', 'rebuild'];
@@ -12,7 +12,8 @@ for (const id of IDS) {
 
 const load = (n) => fetch(`/film/data/${n}.json`).then((r) => r.json());
 const D = {};
-for (const n of ['timeline', 'eva_intro', 'eva_phrase', 'eva_chorus', 'sin_a', 'sincerely', 'fri_d', 'frieren_a', 'frieren_b', 'a4']) D[n] = await load(n);
+D.timeline = await load(PURE ? 'timeline_pure' : 'timeline');
+for (const n of ['eva_intro', 'eva_phrase', 'eva_chorus', 'sin_a', 'sincerely', 'fri_d', 'frieren_a', 'frieren_b', 'a4']) D[n] = await load(n);
 D.C = D.timeline.cues;
 
 const dpr = window.devicePixelRatio || 1;

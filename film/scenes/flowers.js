@@ -1,7 +1,7 @@
 // III · Frieren, the B-minor song, as her favourite spell: a field of flowers under the meteor
 // shower. Every melody note grows a stem as tall as its pitch and opens a pale-blue flower as wide as
 // its touch; every inner-voice note is a meteor; the bass is the grass.
-import { C, el, show, env, clamp, rgba, N, ease, rng } from '../lib.js';
+import { C, el, show, env, clamp, rgba, N, ease, rng, PURE } from '../lib.js';
 
 const GOLD = '#cdb986', IV = '#ece7de', MOON = '#d6e1f0', BLUE = '#a9bfdc', GROUND = 902;
 const MA = 0.42, MDX = -Math.cos(MA), MDY = Math.sin(MA);    // meteors fall to the lower left
@@ -16,7 +16,7 @@ export default {
     const R = rng(1311);
     for (const n of st.notes) { n.jx = (R() - 0.5) * 10; n.ph = R() * Math.PI * 2; n.rot = R() * Math.PI; n.my = R(); }
     st.stars = Array.from({ length: 240 }, () => ({ x: R() * 1920, y: 40 + Math.pow(R(), 1.3) * 640, r: 0.4 + R() * R() * 1.1, a: 0.12 + R() * 0.4, ph: R() * 6.28 }));
-    el(L.ui, 'div', 'a kicker', 'III &nbsp;·&nbsp; 葬送的芙莉莲 · 组曲 &nbsp;·&nbsp; 钢琴改编 ANIMENZ', { left: '120px', top: '104px' });
+    if (!PURE) el(L.ui, 'div', 'a kicker', 'III &nbsp;·&nbsp; 葬送的芙莉莲 · 组曲 &nbsp;·&nbsp; 钢琴改编 ANIMENZ', { left: '120px', top: '104px' });
   },
   draw(L, t, D) {
     const ctx = L.ctx, st = L.st;

@@ -1,6 +1,6 @@
 // I · the EVA chorus as an AT field: the melody is drawn as one luminous line; every bass strike
 // throws octagonal ripples from the pen. Numbers read out like a MAGI console, quietly.
-import { C, el, show, text, html, env, clamp, rgba, N, ease, noteName, hz } from '../lib.js';
+import { C, el, show, text, html, env, clamp, rgba, N, ease, noteName, hz, PURE } from '../lib.js';
 
 const EVA = '#e8502e', IV = '#ece7de';
 const X0 = 150, X1 = 1770;
@@ -46,6 +46,7 @@ export default {
       if (last && n.s - last.s < 0.02) { last.v = Math.max(last.v, n.v); continue; }
       st.hits.push({ s: n.s, v: n.v });
     }
+    if (PURE) return;
     el(ui, 'div', 'a kicker', 'I &nbsp;·&nbsp; 残酷天使的行动纲领 &nbsp;·&nbsp; 钢琴改编 ANIMENZ', { left: '120px', top: '104px' });
     st.note = el(ui, 'div', 'a', '', { right: '120px', top: '92px', textAlign: 'right', color: '#f2eee6' });
     st.noteName = el(st.note, 'div', 'serif-en', '', { fontSize: '84px', fontWeight: 500, lineHeight: 1 });
@@ -105,8 +106,8 @@ export default {
       g.addColorStop(0, rgba(EVA, 0.55 * out)); g.addColorStop(1, rgba(EVA, 0));
       ctx.fillStyle = g; ctx.beginPath(); ctx.arc(head.x, head.y, 30, 0, Math.PI * 2); ctx.fill();
       ctx.fillStyle = rgba('#f2eee6', out); ctx.beginPath(); ctx.arc(head.x, head.y, 3.8, 0, Math.PI * 2); ctx.fill();
-      html(st.noteName, noteName(head.p).replace('♭', '<span style="font-family:var(--serif-cn);font-weight:300;font-size:0.5em;vertical-align:0.62em">♭</span>'));
-      text(st.noteHz, `${hz(head.p).toFixed(2)} Hz`);
+      if (!PURE) html(st.noteName, noteName(head.p).replace('♭', '<span style="font-family:var(--serif-cn);font-weight:300;font-size:0.5em;vertical-align:0.62em">♭</span>'));
+      if (!PURE) text(st.noteHz, `${hz(head.p).toFixed(2)} Hz`);
     }
     // the landing: the run ends on the lowest C
     const land = st.notes.filter((n) => n.p <= 25);
@@ -118,6 +119,7 @@ export default {
         for (const k of [1, 0.8, 0.6, 0.4]) { ctx.strokeStyle = rgba(EVA, 0.9 * (1 - q)); octagon(ctx, xOf(land[0].s), yOf(land[0].p), (30 + 520 * ease.out(q)) * k); }
       }
     }
+    if (PURE) return;
     let bar = 48;
     st.bars.forEach((b, i) => { if (u >= b) bar = 48 + i; });
     text(st.bar, `BAR ${Math.min(bar, 60)} / 60 · ♩ = 129`);

@@ -1,3 +1,11 @@
 node_modules/
 out/
 *.log
+assets/midi/
+assets/samples/
+film/data/eva_intro.json
+film/data/eva_phrase.json
+film/data/sincerely.json
+film/data/frieren_a.json
+film/data/frieren_b.json
+__pycache__/

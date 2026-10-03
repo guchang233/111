@@ -1,4 +1,4 @@
-// Put it back together: Frieren's finale drawn as a mandala, every note at its moment and pitch.
+// Finale: Frieren's suite closes as a mandala, every note drawn at its moment (angle) and pitch (radius).
 import { C, el, show, html, env, clamp, rgba, N, prog, ease } from '../lib.js';
 
 const GOLD = '#cdb986', WHITE = '#ece7de';
@@ -31,19 +31,8 @@ export default {
     const ang = (s) => -Math.PI / 2 + (s / st.T) * Math.PI * 2;
     const rad = (p) => 112 + (p - 33) * 4.6;
     const out = 1 - prog(t, Cq.end - 1.4, Cq.end - 0.1);
-    // the parts fly home: eight card outlines converge on the centre
-    const fly = prog(t, Cq.reb, Cq.reb + 1.8);
-    if (fly < 1) {
-      for (let i = 0; i < 8; i++) {
-        const gx = 120 + (i % 4) * 425.5 + 201, gy = 312 + Math.floor(i / 4) * 340 + 159;  // where the BOM cards sat
-        const k = ease.io(fly), x = gx + (CX - gx) * k, y = gy + (CY - gy) * k, s = 1 - 0.92 * k;
-        ctx.strokeStyle = rgba(i === 7 ? C.mark : WHITE, 0.5 * (1 - k)); ctx.lineWidth = 1;
-        if (i === 7) ctx.setLineDash([3, 4]);
-        ctx.strokeRect(x - 201 * s, y - 159 * s, 402 * s, 318 * s); ctx.setLineDash([]);
-      }
-    }
-    // centre: the closed star of fifths and the one circle, assembled
-    const core = ease.out(prog(t, Cq.reb + 1.2, Cq.reb + 3.2)) * out;
+    // centre: the closed star of fifths inside a gold ring
+    const core = ease.out(prog(t, Cq.reb + 0.4, Cq.reb + 2.6)) * out;
     if (core > 0) {
       ctx.strokeStyle = rgba(C.violetHi, 0.55 * core); ctx.lineWidth = 0.9; ctx.beginPath();
       for (let k = 0; k <= 12; k++) { const a = -Math.PI / 2 + (((7 * k) % 12) / 12) * Math.PI * 2; const x = CX + 62 * Math.cos(a), y = CY + 62 * Math.sin(a); k ? ctx.lineTo(x, y) : ctx.moveTo(x, y); }

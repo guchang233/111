@@ -1,8 +1,8 @@
 // Film runtime: one layer per scene, composited by the timeline. window.renderFrame(t) is pure in t.
 import { W, H, clamp, ease } from './lib.js';
 
-const IDS = ['coldopen', 'title', 'whole', 'layer01', 'layer02', 'epi_violet', 'chords', 'layer04',
-             'epi_frieren', 'layer05', 'bom', 'rebuild'];
+const IDS = ['coldopen', 'title', 'whole', 'atfield', 'epi_violet', 'letter', 'chords',
+             'epi_frieren', 'flowers', 'magic', 'rebuild'];
 const only = new URLSearchParams(location.search).get('only');
 const SCENES = {};
 for (const id of IDS) {
@@ -12,7 +12,7 @@ for (const id of IDS) {
 
 const load = (n) => fetch(`/film/data/${n}.json`).then((r) => r.json());
 const D = {};
-for (const n of ['timeline', 'eva_intro', 'eva_phrase', 'sincerely', 'frieren_a', 'frieren_b', 'a4', 'stats']) D[n] = await load(n);
+for (const n of ['timeline', 'eva_intro', 'eva_phrase', 'eva_chorus', 'sin_a', 'sincerely', 'fri_d', 'frieren_a', 'frieren_b', 'a4']) D[n] = await load(n);
 D.C = D.timeline.cues;
 
 const dpr = window.devicePixelRatio || 1;
@@ -29,19 +29,11 @@ for (const spec of D.timeline.scenes) {
   ctx.scale(dpr, dpr);
   const ui = document.createElement('div');
   ui.className = 'ui';
-  if (scene.paper) el.insertAdjacentHTML('beforeend', mottle(spec.id, layers.length * 7 + 3));
   el.appendChild(cv); el.appendChild(ui);
   stage.appendChild(el);
   const L = { spec, el, cv, ctx, ui, vis: false, st: {} };
   scene.init(L, D);
   layers.push(L);
-}
-
-function mottle(id, seed) {
-  return `<svg class="mottle" viewBox="0 0 1920 1080" preserveAspectRatio="none"><filter id="mottle-${id}" x="0" y="0" width="100%" height="100%">
-    <feTurbulence type="fractalNoise" baseFrequency="0.0035 0.006" numOctaves="4" seed="${seed}"/>
-    <feColorMatrix type="matrix" values="0 0 0 0 0.35  0 0 0 0 0.3  0 0 0 0 0.22  0 0 0 0.55 -0.2"/></filter>
-    <rect width="1920" height="1080" filter="url(#mottle-${id})" opacity="0.16"/></svg>`;
 }
 
 // make sure every glyph the film will ever show is loaded before the first frame

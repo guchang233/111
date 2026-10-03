@@ -1,12 +1,13 @@
-// LAYER 05 · 音色 → LAYER 06 · 波
-// Frieren's theme blooms on a faint magic circle; then one note, A4, is taken apart into rotating
-// circles (its real measured partials), which are removed one by one until a single sine remains.
+// III · Frieren's A-major theme inside a magic circle. Every note blooms where its pitch lives on the
+// circle; the twelve rotating circles carry the measured recipe of a piano tone, turn at the speed of
+// the sounding melody note and swell when it is struck; to the right, its waveform (higher notes pack
+// more cycles in).
 import { C, el, show, html, text, env, clamp, rgba, N, prog, ease } from '../lib.js';
 
 const GOLD = '#cdb986', WHITE = '#ece7de';
 const CX = 640, CY = 566, R0 = 352, R1 = 330, R2 = 298, R3 = 272, K = 118;
 const WX = 1112, WW = 690;
-const TURN = 2.6;                                   // seconds per visual turn of the fundamental
+const TURN = 4.0;                                   // seconds per visual turn of A4's fundamental
 
 export default {
   bg: 'night',
@@ -17,19 +18,22 @@ export default {
     st.parts = D.a4.partials;                       // [[freq, amp], ...] measured from the A4 sample
     st.amp = st.parts.map((p) => p[1]);
     st.ph = st.amp.map((_, i) => 0.37 * (i + 1));    // the same phases the soundtrack uses
-    st.kick = el(ui, 'div', 'a kicker', '', { left: '120px', top: '104px' });
-    st.src = el(ui, 'div', 'a kicker', 'SONG 03 &nbsp;·&nbsp; 葬送的芙莉莲 · 组曲 &nbsp;·&nbsp; 钢琴改编 ANIMENZ', { left: '120px', bottom: '84px' });
-    st.one = el(ui, 'div', 'a', '只取一个音：<span class="serif-en" style="font-size:1.25em">A</span>。', {
-      left: '0', width: '1280px', textAlign: 'center', top: '960px', fontFamily: 'var(--serif-cn)', fontSize: '30px', letterSpacing: '0.08em', color: '#eee9e0' });
-    st.head = el(ui, 'div', 'a', '', { right: '120px', top: '98px', textAlign: 'right' });
-    st.h1 = el(st.head, 'div', '', '一个音，是一组旋转的圆。', { fontFamily: 'var(--serif-cn)', fontWeight: 300, fontSize: '46px', letterSpacing: '0.08em', color: '#eee9e0' });
-    st.h2 = el(st.head, 'div', '', 'x(t) = Σ a<sub style="font-size:0.6em">n</sub> sin(2π n f t + φ<sub style="font-size:0.6em">n</sub>)', { fontFamily: 'var(--serif-en)', fontStyle: 'italic', fontSize: '30px', color: 'rgba(205,185,134,0.9)', marginTop: '18px' });
-    st.h3 = el(ui, 'div', 'a', '', { right: '120px', top: '98px', textAlign: 'right', fontFamily: 'var(--serif-cn)', fontWeight: 300, fontSize: '46px', letterSpacing: '0.08em', color: '#eee9e0', whiteSpace: 'nowrap' });
-    st.legend = el(ui, 'div', 'a mono', `n = 1 … 12 &nbsp;<b style="color:${GOLD};font-weight:400">○</b>&nbsp; 每个圆 = 一个泛音<br>半径 = 实测振幅 a<sub>n</sub> &nbsp;·&nbsp; 转速 = n × f`,
-      { right: '120px', bottom: '84px', fontSize: '12.5px', letterSpacing: '0.14em', color: 'rgba(236,231,222,0.45)', textAlign: 'right', lineHeight: 2 });
-    st.hz = el(ui, 'div', 'a', '<span class="mono" style="font-size:88px;font-weight:300">440</span><span class="kicker" style="margin-left:16px">HZ · 每秒振动 440 次</span>',
-      { left: `${WX}px`, top: '760px', whiteSpace: 'nowrap', color: '#eee9e0' });
-    st.count = el(ui, 'div', 'a mono', '', { left: `${WX}px`, top: '905px', fontSize: '14px', letterSpacing: '0.18em', color: 'rgba(236,231,222,0.55)', whiteSpace: 'nowrap' });
+    st.src = el(ui, 'div', 'a kicker', 'III &nbsp;·&nbsp; 葬送的芙莉莲 · 组曲 &nbsp;·&nbsp; 钢琴改编 ANIMENZ', { left: '120px', top: '104px' });
+    // the melody's phase, integrated so the circles turn at the speed of the sounding note; the
+    // trace's cycles-per-width glides to each new note; the swell follows each strike
+    const mel = [];
+    for (const n of st.notes) { const l = mel[mel.length - 1]; if (l && Math.abs(n.s - l.s) < 0.02) { if (n.p > l.p) mel[mel.length - 1] = n; } else mel.push(n); }
+    st.dt = 1 / 120;
+    st.theta = [0]; st.per = []; st.amp1 = [];
+    let cur = mel[0] ? mel[0].p : 69, per = 2.2 * Math.pow(2, (cur - 69) / 12), last = null, mi = 0;
+    for (let k = 0; k * st.dt <= Cq.reb - Cq.fri_a + 1.5; k++) {
+      const tt = k * st.dt;
+      while (mi < mel.length && mel[mi].s <= tt) { last = mel[mi]; cur = last.p; mi++; }
+      per += (2.2 * Math.pow(2, (cur - 69) / 12) - per) * (1 - Math.exp(-st.dt / 0.07));
+      st.per.push(per);
+      st.amp1.push(0.62 + (last ? 0.38 * (last.v / 127) * Math.exp(-(tt - last.s) / 0.8) : 0));
+      st.theta.push(st.theta[k] + (2 * Math.PI / TURN) * Math.pow(2, (cur - 69) / 12) * st.dt);
+    }
     // inscription ring: the measured recipe of the A4, written around the circle
     const Rt = (R1 + R2) / 2 - 5;
     const words = st.parts.map((p, i) => `${i + 1}f · ${p[1].toFixed(3)}`).join('   ◦   ') + '   ◦   ';
@@ -42,9 +46,9 @@ export default {
   draw(L, t, D) {
     const ctx = L.ctx, st = L.st, Cq = D.C;
     const u = t - Cq.fri_a;                                         // into the theme
-    const fullIn = ease.io(prog(t, Cq.a4_additive - 0.4, Cq.a4_additive + 1.4));   // magic circle fully drawn
+    const fullIn = ease.io(prog(t, Cq.fri_a - 0.2, Cq.fri_a + 1.6));               // magic circle drawn in
     const ringA = 0.18 + 0.72 * fullIn;
-    const fade = 1 - prog(t, Cq.l6_fade, Cq.l6_fade + 0.9);
+    const fade = 1 - prog(t, Cq.reb - 0.4, Cq.reb + 0.8);
     const rot = t * 0.035;
     // ---- rings, ticks, dodecagon, star {12/5} ----
     ctx.save(); ctx.translate(CX, CY); ctx.rotate(rot * 0.5);
@@ -73,7 +77,7 @@ export default {
     show(st.ring, fullIn * fade);
 
     // ---- the theme: each note blooms where its pitch lives (A at the top) ----
-    const thVis = 1 - prog(t, Cq.a4_additive - 0.6, Cq.a4_additive + 0.6);
+    const thVis = fade;
     if (thVis > 0) {
       for (const n of st.notes) {
         if (n.s > u) break;
@@ -90,27 +94,12 @@ export default {
         ctx.beginPath(); ctx.arc(x, y, 2.6 + 2.4 * Math.exp(-age / 0.3), 0, Math.PI * 2); ctx.fill();
       }
     }
-    // ---- the single A4 ----
-    const a4age = t - Cq.a4;
-    if (a4age > 0 && t < Cq.a4_additive + 0.8) {
-      const k = Math.exp(-a4age / 1.8);
-      const x = CX, y = CY - (70 + (69 - 45) * 5.4);
-      ctx.strokeStyle = rgba(WHITE, 0.9 * k); ctx.lineWidth = 1.2;
-      for (const d of [0, 0.35, 0.7]) { const q = clamp((a4age - d) / 1.6); if (q > 0 && q < 1) { ctx.globalAlpha = 1 - q; ctx.beginPath(); ctx.arc(x, y, 6 + 90 * ease.out(q), 0, Math.PI * 2); ctx.stroke(); } }
-      ctx.globalAlpha = 1;
-      ctx.fillStyle = rgba(WHITE, 0.95); ctx.beginPath(); ctx.arc(x, y, 5, 0, Math.PI * 2); ctx.fill();
-    }
-    show(st.one, env(t, Cq.a4 + 0.2, Cq.a4_additive + 1.4, 0.4, 0.6));
-
     // ---- epicycles and the waveform they draw ----
     const ep = fullIn * fade;
     if (ep > 0.001) {
-      const g = st.amp.map((_, i) => {                              // harmonic gains (removal schedule)
-        const n = i + 1, idx = 12 - n;
-        if (idx >= Cq.l6_drop.length) return 1;
-        return clamp(1 - (t - Cq.l6_drop[idx]) / 0.25);
-      });
-      const th0 = (t - Cq.a4_additive) * (2 * Math.PI / TURN);
+      const kNow = clamp(Math.floor(u / st.dt), 0, st.per.length - 1);
+      const th0 = st.theta[kNow], sw = st.amp1[kNow];
+      const g = st.amp.map(() => sw);
       const yOf = (th) => st.amp.reduce((s, a, i) => s + a * g[i] * Math.sin((i + 1) * th + st.ph[i]), 0);
       const norm = 1 / st.amp.reduce((s, a) => s + a, 0) * 2.2;
       let x = CX, y = CY;
@@ -133,32 +122,18 @@ export default {
       const gl = ctx.createRadialGradient(x, y, 0, x, y, 26); gl.addColorStop(0, rgba(GOLD, 0.55 * ep)); gl.addColorStop(1, rgba(GOLD, 0));
       ctx.fillStyle = gl; ctx.beginPath(); ctx.arc(x, y, 26, 0, Math.PI * 2); ctx.fill();
       ctx.fillStyle = rgba(WHITE, ep); ctx.beginPath(); ctx.arc(x, y, 3.4, 0, Math.PI * 2); ctx.fill();
-      // the trace: past values of the tip, newest at the left
-      const PER = 2.2, span = Math.min(PER * 2 * Math.PI, Math.max(0, th0));
-      ctx.strokeStyle = rgba(WHITE, 0.95 * ep); ctx.lineWidth = 1.6; ctx.beginPath();
-      const steps = 900;
+      // the trace: the tip's past, newest at the left, as if the note had always been sounding
+      ctx.strokeStyle = rgba(WHITE, 0.9 * ep); ctx.lineWidth = 1.35; ctx.lineJoin = 'round'; ctx.beginPath();
+      const steps = 1100, cyc = st.per[kNow] * 2 * Math.PI;
       for (let i = 0; i <= steps; i++) {
-        const q = i / steps, th = th0 - q * span;
-        const px = WX + q * WW * (span / (PER * 2 * Math.PI)), py = CY - yOf(th) * scale;
+        const q = i / steps, px = WX + q * WW, py = CY - yOf(th0 - q * cyc) * scale;
         i ? ctx.lineTo(px, py) : ctx.moveTo(px, py);
       }
       ctx.stroke();
       ctx.strokeStyle = rgba(GOLD, 0.4 * ep); ctx.lineWidth = 0.6;
       ctx.beginPath(); ctx.moveTo(WX, CY); ctx.lineTo(WX + WW, CY); ctx.stroke();
       ctx.fillStyle = rgba(WHITE, ep); ctx.beginPath(); ctx.arc(WX, tipY, 3.4, 0, Math.PI * 2); ctx.fill();
-      const live = g.filter((v) => v > 0.5).length;
-      text(st.count, t >= Cq.l6_in ? `HARMONICS · ${String(live).padStart(2, '0')} / 12` : 'HARMONICS · 12 / 12');
     }
-    show(st.count, env(t, Cq.a4_additive + 0.8, Cq.l6_fade + 0.6, 0.5, 0.5));
-    // ---- type ----
-    const l6 = t >= Cq.l6_in;
-    html(st.kick, l6 ? 'LAYER 06 <em style="color:var(--frieren)">/</em> 06 &nbsp;·&nbsp; WAVE' : 'LAYER 05 <em style="color:var(--frieren)">/</em> 06 &nbsp;·&nbsp; TIMBRE');
-    show(st.kick, env(t, Cq.fri_a + 0.4, Cq.l6_fade + 0.8, 0.6, 0.6));
-    show(st.src, env(t, Cq.fri_a + 0.4, Cq.a4 + 0.4, 0.6, 0.6));
-    show(st.head, env(t, Cq.a4_additive + 0.9, Cq.l6_in + 0.2, 0.6, 0.4));
-    show(st.legend, env(t, Cq.a4_additive + 1.5, Cq.l6_pure, 0.6, 0.5));
-    html(st.h3, t < Cq.l6_pure ? '去掉泛音，一个，一个。' : '只剩一条正弦波。');
-    show(st.h3, env(t, Cq.l6_in + 0.3, Cq.l6_fade + 0.6, 0.5, 0.5));
-    show(st.hz, env(t, Cq.l6_pure + 0.3, Cq.l6_fade + 0.6, 0.6, 0.5));
+    show(st.src, env(t, Cq.fri_a + 0.2, Cq.reb, 0.6, 0.6));
   },
 };

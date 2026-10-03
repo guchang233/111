@@ -7,8 +7,7 @@ export default {
     const st = L.st;
     st.notes = D.eva_phrase.notes.map(N);
     st.chords = D.eva_phrase.chords;
-    el(L.ui, 'div', 'a kicker', 'SONG 01 &nbsp;·&nbsp; 残酷天使的行动纲领 &nbsp;·&nbsp; 钢琴改编 ANIMENZ', { left: '120px', top: '104px' });
-    st.cap1 = el(L.ui, 'div', 'a cap', '这是一首歌。', { left: '0', right: '0', textAlign: 'center', top: '952px', color: '#eee9e0' });
+    el(L.ui, 'div', 'a kicker', 'I &nbsp;·&nbsp; 残酷天使的行动纲领 &nbsp;·&nbsp; 钢琴改编 ANIMENZ', { left: '120px', top: '104px' });
   },
   draw(L, t, D) {
     const ctx = L.ctx, st = L.st;
@@ -56,6 +55,5 @@ export default {
       ctx.fillStyle = rgba(C.ivory, on ? 0.92 : u > c.t ? 0.42 : 0.16);
       ctx.fillText(c.name, x + 4, 924);
     }
-    show(st.cap1, env(t, D.C.eva_end - 2.6, D.C.eva_end + 0.6, 0.6, 0.5));
   },
 };

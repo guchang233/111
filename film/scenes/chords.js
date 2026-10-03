@@ -1,4 +1,4 @@
-// LAYER 03 · 和弦: the Sincerely climax. Each chord is a triangle on the twelve-tone clock.
+// II · Sincerely, climax chorus: every chord is a triangle on the twelve-tone clock.
 import { C, el, show, html, text, env, clamp, rgba, N, prog, ease } from '../lib.js';
 
 const CX = 700, CY = 566, R = 300;
@@ -12,23 +12,17 @@ export default {
     const st = L.st, ui = L.ui;
     st.chords = D.sincerely.chords;
     st.notes = D.sincerely.notes.map(N);
-    el(ui, 'div', 'a kicker', 'LAYER 03 <em style="color:var(--violet)">/</em> 06 &nbsp;·&nbsp; CHORDS', { left: '120px', top: '104px' });
-    el(ui, 'div', 'a h-title', '和弦', { left: '120px', top: '140px', color: '#eee9e0' });
-    el(ui, 'div', 'a kicker', 'SONG 02 &nbsp;·&nbsp; SINCERELY &nbsp;·&nbsp; 紫罗兰永恒花园 OP &nbsp;·&nbsp; 钢琴改编 ANIMENZ', { left: '120px', bottom: '84px' });
+    el(ui, 'div', 'a kicker', 'II &nbsp;·&nbsp; SINCERELY &nbsp;·&nbsp; 紫罗兰永恒花园 OP &nbsp;·&nbsp; 钢琴改编 ANIMENZ', { left: '120px', top: '104px' });
     st.name = el(ui, 'div', 'a', '', { left: '1200px', top: '300px', fontFamily: 'var(--serif-en)', fontWeight: 500, fontSize: '170px', lineHeight: 1, color: '#f2eee6', whiteSpace: 'nowrap' });
     st.roman = el(ui, 'div', 'a', '', { left: '1210px', top: '490px', fontFamily: 'var(--serif-en)', fontStyle: 'italic', fontSize: '52px', color: C.violetHi });
     st.ratio = el(ui, 'div', 'a mono', '', { left: '1212px', top: '590px', fontSize: '40px', letterSpacing: '0.04em', color: '#eee9e0' });
     st.ratioK = el(ui, 'div', 'a kicker', '', { left: '1214px', top: '650px' });
     st.prog = el(ui, 'div', 'a', '', { left: '1212px', top: '760px', fontFamily: 'var(--serif-en)', fontSize: '34px', letterSpacing: '0.06em', whiteSpace: 'nowrap' });
-    st.progK = el(ui, 'div', 'a', '这四个和弦有个名字：<b style="font-weight:500;color:#eee9e0">小室进行</b>。动画歌曲最爱用它。', {
-      left: '1214px', top: '820px', fontFamily: 'var(--serif-cn)', fontSize: '19px', letterSpacing: '0.04em', color: 'rgba(236,231,222,0.62)', whiteSpace: 'nowrap' });
-    st.mirror = el(ui, 'div', 'a', '大三和弦与小三和弦，形状互为<b style="font-weight:500;color:#eee9e0">镜像</b>。', {
-      left: '1214px', top: '820px', fontFamily: 'var(--serif-cn)', fontSize: '19px', letterSpacing: '0.04em', color: 'rgba(236,231,222,0.62)', whiteSpace: 'nowrap' });
     st.romans = ['vi', 'IV', 'V', 'I'];
   },
   draw(L, t, D) {
     const ctx = L.ctx, st = L.st;
-    const u = t - D.C.sin_start;
+    const u = t - D.C.sin_b;
     // the clock
     ctx.strokeStyle = rgba(C.ivory, 0.18); ctx.lineWidth = 1;
     ctx.beginPath(); ctx.arc(CX, CY, R, 0, Math.PI * 2); ctx.stroke();
@@ -74,13 +68,11 @@ export default {
       html(st.name, cur.name.replace('♭', '<span style="font-family:var(--serif-cn);font-weight:300;font-size:0.5em;vertical-align:0.62em;margin-left:0.04em">♭</span>'));
       text(st.roman, cur.roman);
       text(st.ratio, cur.q === 'min' ? '10 : 12 : 15' : '4 : 5 : 6');
-      text(st.ratioK, cur.q === 'min' ? 'MINOR TRIAD · 小三和弦的频率比' : 'MAJOR TRIAD · 大三和弦的频率比');
+      text(st.ratioK, cur.q === 'min' ? 'MINOR' : 'MAJOR');
       const base = cur.roman.replace('⁶', '');
       html(st.prog, st.romans.map((r) => `<span style="color:${r === base ? '#f2eee6' : 'rgba(236,231,222,0.28)'}">${r}</span>`).join('<span style="color:rgba(236,231,222,0.2)"> – </span>'));
     }
-    const vis = env(t, D.C.sin_start + 0.3, D.C.l3_out + 0.6, 0.4, 0.5);
+    const vis = env(t, D.C.sin_b + 0.3, D.C.sin_b_end + 1.0, 0.4, 0.9);
     for (const e of [st.name, st.roman, st.ratio, st.ratioK, st.prog]) show(e, vis);
-    show(st.progK, env(u, 13.6, 27.6, 0.6, 0.6));
-    show(st.mirror, env(u, 1.9, 7.0, 0.6, 0.6));
   },
 };

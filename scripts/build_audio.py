@@ -47,7 +47,7 @@ def fade(clip, fin=0.0, fout=0.0):
 
 
 # ------------------------------------------------------------------ piano ----
-def piano_window(name, src0, src1, gain_fn=None, tail=3.0, use=None):
+def piano_window(name, src0, src1, gain_fn=None, tail=3.0, use=None, lift_at_end=False):
     """Render notes of `name` whose onset lies in [src0, src1) (segment-relative seconds)."""
     ns = []
     for n in (use if use is not None else segments.notes(name)):
@@ -59,6 +59,8 @@ def piano_window(name, src0, src1, gain_fn=None, tail=3.0, use=None):
     pd = [(t - src0, v) for t, v in segments.auto_pedal(name) if t >= src0 - 0.2]
     if not pd or pd[0][0] > 0:
         pd.insert(0, (0.0, 127))
+    if lift_at_end:                                   # seamless join: let go exactly at the seam
+        pd = [(t, v) for t, v in pd if t < src1 - src0 - 0.03] + [(src1 - src0 - 0.03, 0)]
     return piano.render(ns, pd, duration=(src1 - src0) + tail)
 
 
@@ -152,97 +154,52 @@ def additive_a4(partials, dur, drops=(), f0=440.0, fade_in=1.6):
 def build():
     tl = film_timeline.build(); C = tl['cues']
     P = Bus(tl['duration'])        # piano (reverb: hall)
-    S = Bus(tl['duration'])        # synth / foley (lighter reverb)
-    D = Bus(tl['duration'])        # dry: clicks and keys stay close
-
+    S = Bus(tl['duration'])        # synth (lighter reverb)
+    L = film_timeline.seg_len
     eva_t = lambda b: film_timeline.bar_time('eva', b)
 
-    # Act I — EVA as written, then the teardown passes
-    P.add(piano_window('eva', 0.0, eva_t(25), gain_fn=lambda n: 1.55 if n['start'] < eva_t(17) else 1.0, tail=3.2), C['eva_start'])
+    # I · EVA: the opening as written, then straight into the chorus
+    P.add(piano_window('eva', 0.0, L('eva'), gain_fn=lambda n: 4.0 if n['start'] < eva_t(17) else 1.5,
+                       tail=2.0, lift_at_end=True), C['eva_start'])
     S.add(sub_boom(), C['title_in'], 0.35)
-    S.add(swish(1.1), C['l1_in'] - 0.2, 1.0)
+    P.add(fade(piano_window('eva_chorus', 0.0, L('eva_chorus'), tail=4.2), 0.0, 1.8), C['eva_ch'], GAIN['eva_chorus'])
 
-    phrase = [dict(n, start=n['start'], end=n['end']) for n in segments.notes('eva') if n['start'] >= eva_t(17) - 1e-3]
-    with open(os.path.join(DATA, 'eva_phrase.json')) as f:
-        roles = {(round(r[0] + eva_t(17), 3), r[2]): r[5] for r in json.load(f)['notes']}
-    bar = (eva_t(25) - eva_t(17)) / 8
-    def solo(n):
-        k = int((n['start'] - eva_t(17)) / (2 * bar) + 1e-6)
-        role = roles.get((round(n['start'], 3), n['pitch']), 'h')
-        return 1.0 if k == 0 else (1.0 if 'mhb'[k - 1] == role else 0.0)
-    P.add(piano_window('eva', eva_t(17), eva_t(25), gain_fn=solo, tail=2.5), C['l1_replay'], 0.9)
-    for k in range(8):
-        D.add(click(k % 4 == 0), C['l1_clicks'] + k * bar / 4, 0.55)
+    # II · Sincerely: first chorus, then the deceptive cadence drops into the final climax
+    P.add(piano_window('sin_a', 0.0, L('sin_a'), tail=2.0, lift_at_end=True), C['sin_a'], GAIN['sin_a'])
+    P.add(fade(piano_window('sincerely', 0.0, L('sincerely'), tail=3.4), 0.0, 1.6), C['sin_b'], GAIN['sincerely'])
 
-    a, b = C['l2_src']
-    P.add(fade(piano_window('eva', a, b, tail=2.0), 0.02, 1.4), C['l2_audio'], 1.25)
-
-    # Act II — Sincerely
-    sin = piano_window('sincerely', 0.0, film_timeline.bar_time('sincerely', 232), tail=3.4)
-    P.add(fade(sin, 0.0, 1.6), C['sin_start'], 0.46)
-
-    # layer 04: the callback, the spiral of fifths, the comma, the proof, Zhu Zaiyu, the cost
-    P.add(fade(piano_window('eva', eva_t(17), eva_t(19), tail=1.8), 0.0, 1.2), C['l4_callback'], 0.7)
-    c4 = 261.6256
-    for k, ts in enumerate(C['l4_steps']):
-        r = 1.5 ** k
-        while r >= 2: r /= 2
-        S.add(tone(c4 * r, 1.1, ORGAN[:3], decay=0.45, a=0.006, r=0.3), ts, 0.32)
-    S.add(tone(c4, 4.4, ORGAN, a=0.25, r=0.8), C['l4_gap'] + 0.3, 0.2)
-    S.add(tone(c4 * 3 ** 12 / 2 ** 19, 4.4, ORGAN, a=0.25, r=0.8), C['l4_gap'] + 0.3, 0.2)
-    for i, line in enumerate(C['typing'] + [C['typing_sign']]):
-        for j, ch in enumerate(line['text']):
-            if ch != ' ':
-                D.add(typekey(strong=(j == 0)), line['start'] + j * line['interval'], 0.42)
-    et = [c4 * 2 ** (((7 * k) % 12) / 12) for k in range(12)]
-    for k, f in enumerate(et):
-        S.add(tone(f, 0.9, ORGAN[:3], decay=0.35, a=0.006, r=0.3), C['l4_close'] + 0.3 + k * 0.17, 0.26)
-    S.add(tone(c4, 2.2, ORGAN, a=0.05, r=0.9), C['l4_close'] + 0.3 + 12 * 0.17, 0.16)
-    S.add(tone(2 * c4, 2.2, ORGAN, a=0.05, r=0.9), C['l4_close'] + 0.3 + 12 * 0.17, 0.16)
-    f3 = 174.6141
-    for ratio in (1.0, 5 / 4, 3 / 2):
-        S.add(tone(f3 * ratio, 2.7, ORGAN, a=0.15, r=0.6), C['l4_just'], 0.17)
-    for semis in (0, 4, 7):
-        S.add(tone(f3 * 2 ** (semis / 12), 3.8, ORGAN, a=0.15, r=0.8), C['l4_et'], 0.17)
-
-    # Act III — Frieren
-    a, b = C['fri_a_src']
-    P.add(fade(piano_window('frieren_a', a, b, tail=3.0), 0.0, 2.0), C['fri_a'], 1.3)
-    P.add(piano.render([dict(start=0.0, end=2.4, pitch=69, vel=78)], [], duration=9.0), C['a4'], 1.0)
-    with open(os.path.join(DATA, 'a4.json')) as f:
-        partials = json.load(f)['partials']
-    dur = C['l6_fade'] + 1.0 - C['a4_additive']
-    drops = [t - C['a4_additive'] for t in C['l6_drop']]
-    add = additive_a4(partials, dur, drops)
-    n_f = int(1.0 * SR); add[-n_f:] *= np.linspace(1, 0, n_f)
-    S.add(add, C['a4_additive'], 0.19)
-
-    for k, t in enumerate(C['bom_cards'][:-1]):
-        D.add(tick(), t, 0.5)
-
+    # III · Frieren
+    P.add(fade(piano_window('fri_d', 0.0, L('fri_d'), tail=3.6), 0.0, 2.2), C['fri_d'], GAIN['fri_d'])
+    P.add(fade(piano_window('frieren_a', 0.0, L('frieren_a'), tail=3.0), 0.0, 2.0), C['fri_a'], GAIN['frieren_a'])
     a, b = C['reb_src']
-    reb = piano_window('frieren_b', a, b, tail=4.0)
-    P.add(fade(reb, 0.0, 3.0), C['reb'], 0.95)
+    P.add(fade(piano_window('frieren_b', a, b, tail=4.0), 0.0, 3.0), C['reb'], GAIN['frieren_b'])
 
     # ---- mix ----
     p = piano.reverb(P.x, wet=0.24)[:len(P.x)]
     s = piano.reverb(S.x, wet=0.16)[:len(S.x)]
-    mix = p + s + D.x
+    mix = p + s
     n = int((tl['duration'] + 0.5) * SR)
     mix = mix[:n]
     raw = os.path.join(OUT, 'master_raw.wav')
     piano.write(raw, mix, peak_db=-3.0)
     final = os.path.join(OUT, 'master.wav')
-    # two-pass loudness normalisation to -15 LUFS, true peak -1.5 dBTP; 28 Hz high-pass for rumble
-    probe = subprocess.run(['ffmpeg', '-hide_banner', '-i', raw, '-af',
-                            'highpass=f=28,loudnorm=I=-15:TP=-1.5:LRA=13:print_format=json', '-f', 'null', '-'],
-                           capture_output=True, text=True).stderr
-    js = json.loads(probe[probe.rindex('{'):probe.rindex('}') + 1])
-    af = ('highpass=f=28,loudnorm=I=-15:TP=-1.5:LRA=13:measured_I={input_i}:measured_TP={input_tp}:'
-          'measured_LRA={input_lra}:measured_thresh={input_thresh}:offset={target_offset}:linear=true').format(**js)
-    subprocess.run(['ffmpeg', '-y', '-loglevel', 'error', '-i', raw, '-af', af, '-ar', str(SR), '-c:a', 'pcm_s24le', final], check=True)
+    # Mastering: one linear gain to -15 LUFS, then a fast limiter that only shaves piano transients.
+    # (loudnorm falls back to dynamic compression whenever a linear gain would clip, which reshapes the
+    # balance between sections; this keeps the mix exactly as balanced above.)
+    def lufs(path):
+        err = subprocess.run(['ffmpeg', '-hide_banner', '-i', path, '-af', 'ebur128', '-f', 'null', '-'], capture_output=True, text=True).stderr
+        return float(err[err.rindex('I:'):].split()[1])
+    gain = -15.0 - lufs(raw)
+    subprocess.run(['ffmpeg', '-y', '-loglevel', 'error', '-i', raw, '-af',
+                    f'highpass=f=28,volume={gain:.2f}dB,alimiter=limit=0.84:attack=2:release=60:level=false',
+                    '-ar', str(SR), '-c:a', 'pcm_s24le', final], check=True)
+    js = {'input_i': f'{-15.0 - gain:.2f}'}
     print('master:', final, 'measured', js['input_i'], 'LUFS ->', -15)
     return final
+
+
+# per-segment balance, set by ear-proxy: RMS of each passage measured after a first pass
+GAIN = {'eva_chorus': 0.62, 'sin_a': 0.8, 'sincerely': 0.5, 'fri_d': 0.75, 'frieren_a': 1.9, 'frieren_b': 1.1}
 
 
 if __name__ == '__main__':

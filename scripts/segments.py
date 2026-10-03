@@ -4,12 +4,16 @@ from midi_lib import Song
 
 MIDI = os.path.join(os.path.dirname(__file__), '..', 'assets', 'midi')
 
-# (file, first bar, last bar) — bars are inclusive, counted from 0 as in analyze_midi.py
+# name: (file, (start bar, beat offset), (end bar, beat offset)) — the end is exclusive.
+# Beats are the bar's own beat unit (quarter in 4/4, eighth in 6/8). Bars count from 0 as in analyze_midi.py.
 SEGMENTS = {
-    'eva':       ('eva.mid', 0, 24),          # intro arpeggios → ritardando → 残酷な天使のように
-    'sincerely': ('sincerely.mid', 216, 231),  # flourish → climax chorus (Dm–B♭–C–F)
-    'frieren_a': ('frieren.mid', 270, 282),   # the gentle A-major theme with lone bell notes
-    'frieren_b': ('frieren.mid', 316, 347),   # the finale: climax, then the fade
+    'eva':        ('eva.mid', (0, 0), (25, 0)),          # intro arpeggios → ritardando → 残酷な天使のように
+    'eva_chorus': ('eva.mid', (48, 0), (61, 1)),         # G fanfare → the chorus → the run lands on low C
+    'sin_a':      ('sincerely.mid', (60, 0), (76, 0)),   # pre-chorus → first chorus, ends on C/E
+    'sincerely':  ('sincerely.mid', (216, 0), (232, 0)), # flourish → climax chorus (Dm–B♭–C–F)
+    'fri_d':      ('frieren.mid', (172, 0), (189, 4)),   # F♯ pickup → the B-minor song, ends on the tonic
+    'frieren_a':  ('frieren.mid', (270, 0), (278, 0)),   # the A-major theme with lone bell notes
+    'frieren_b':  ('frieren.mid', (316, 0), (348, 0)),   # the finale (the film uses bars 322–344)
 }
 
 _songs = {}
@@ -22,12 +26,22 @@ def song(name):
     return _songs[f]
 
 
+def _at(s, bar, beat):
+    if bar >= len(s.bars):
+        return s.sec(s.end_tick)
+    tick, num, den = s.bars[bar]
+    return s.sec(tick + int(beat * s.tpb * 4 / den))
+
+
 def window(name):
     s = song(name)
-    _, b0, b1 = SEGMENTS[name]
-    t0 = s.sec(s.bars[b0][0])
-    t1 = s.sec(s.bars[b1 + 1][0]) if b1 + 1 < len(s.bars) else s.sec(s.end_tick)
-    return t0, t1
+    _, (b0, k0), (b1, k1) = SEGMENTS[name]
+    return _at(s, b0, k0), _at(s, b1, k1)
+
+
+def bar_range(name):
+    _, (b0, _k0), (b1, k1) = SEGMENTS[name]
+    return b0, (b1 if k1 > 0 else b1 - 1)
 
 
 def notes(name, offset=True):
@@ -62,7 +76,7 @@ def auto_pedal(name, offset=True, lift=0.03, catch=0.09):
     """
     s = song(name)
     t0, t1 = window(name)
-    _, b0, b1 = SEGMENTS[name]
+    b0, b1 = bar_range(name)
     ev = []
     for bi in range(b0, b1 + 1):
         tick, num, den = s.bars[bi]

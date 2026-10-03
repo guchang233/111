@@ -26,33 +26,32 @@
   const NS = 'http://www.w3.org/2000/svg';
   const svg = document.getElementById('kb');
   const el = (tag, a) => { const e = document.createElementNS(NS, tag); for (const k in a) e.setAttribute(k, a[k]); svg.appendChild(e); return e; };
-  // One octave of piano keys, exploded into parts, each labelled with its frequency ratio 2^(k/12).
+  // One octave of piano keys (C4–C5), exploded into parts, each labelled with its frequency in Hz; A4 in red.
   const X0 = 924, Y0 = 236, KW = 40, GAP = 14, KH = 470;
   const whites = [0, 2, 4, 5, 7, 9, 11, 12];
   const blacks = { 1: 0, 3: 1, 6: 3, 8: 4, 10: 5 };     // semitone -> after which white index
   const wx = (i) => X0 + i * (KW + GAP);
+  const hz = (k) => (261.6256 * Math.pow(2, k / 12)).toFixed(2);
   whites.forEach((k, i) => el('rect', { x: wx(i), y: Y0 + 120, width: KW, height: KH, fill: '#f2eee6' }));
-  // ratios printed vertically along each white key
+  // frequencies printed vertically along each key
   whites.forEach((k, i) => {
-    const r = Math.pow(2, k / 12).toFixed(4);
     const x = wx(i) + KW / 2, y = Y0 + 120 + KH - 18;
-    el('text', { x, y, 'font-family': 'IBM Plex Mono', 'font-size': 15, fill: '#0b0b0c', transform: `rotate(-90 ${x} ${y})`, 'dominant-baseline': 'middle', 'letter-spacing': '0.04em' }).textContent = r;
+    el('text', { x, y, 'font-family': 'IBM Plex Mono', 'font-size': 15, fill: k === 9 ? '#c3402e' : '#0b0b0c', transform: `rotate(-90 ${x} ${y})`, 'dominant-baseline': 'middle', 'letter-spacing': '0.04em' }).textContent = hz(k);
   });
   for (const [k, after] of Object.entries(blacks)) {
     const w = Math.round(KW * 0.72), x = wx(after) + KW + GAP / 2 - w / 2, h = Math.round(KH * 0.64), y = Y0 - 40;
     el('rect', { x, y, width: w, height: h, fill: 'none', stroke: '#f2eee6', 'stroke-width': 1.6 });
     const cx = x + w / 2, cy = y + h - 16;
-    el('text', { x: cx, y: cy, 'font-family': 'IBM Plex Mono', 'font-size': 15, fill: 'rgba(242,238,230,0.85)', transform: `rotate(-90 ${cx} ${cy})`, 'dominant-baseline': 'middle' }).textContent = Math.pow(2, k / 12).toFixed(4);
+    el('text', { x: cx, y: cy, 'font-family': 'IBM Plex Mono', 'font-size': 15, fill: 'rgba(242,238,230,0.85)', transform: `rotate(-90 ${cx} ${cy})`, 'dominant-baseline': 'middle' }).textContent = hz(k);
     el('line', { x1: cx, y1: y + h, x2: cx, y2: Y0 + 112, stroke: '#f2eee6', 'stroke-width': 0.8, 'stroke-dasharray': '2 4', opacity: 0.55 });
   }
-  // the one semitone step, in red pencil
-  const ax = wx(0) + KW / 2, bx = wx(0) + KW + GAP / 2;
-  el('text', { x: wx(0) - 8, y: Y0 + 96, 'text-anchor': 'end', 'font-family': 'Cormorant Garamond', 'font-weight': 600, 'font-size': 30, fill: '#e8502e' }).textContent = '×¹²√2';
+  // the unit, in red pencil
+  el('text', { x: wx(0) - 10, y: Y0 + 96, 'text-anchor': 'end', 'font-family': 'Cormorant Garamond', 'font-style': 'italic', 'font-weight': 400, 'font-size': 36, fill: '#e8502e' }).textContent = 'Hz';
   await fontsReady([
-    ['900 300px "Noto Serif SC"', '把一首歌拆到只剩数字'],
+    ['900 300px "Noto Serif SC"', '把三首歌拆到只剩数字'],
     ['500 34px "Noto Serif SC"', 'EVA/紫罗兰永恒花园葬送的芙莉莲'],
     ['400 20px "IBM Plex Mono"', 'ANIMENZ × 3 · 4K 0123456789.'],
-    ['600 30px "Cormorant Garamond"', '×¹²√2'],
+    ['italic 400 36px "Cormorant Garamond"', 'Hz'],
   ]);
   grain({ seed: 31, opacity: 0.09 });
   ready();

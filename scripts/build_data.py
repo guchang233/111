@@ -181,10 +181,10 @@ def main():
                         roman=(r.lower() if quality == 'min' else r) + ('⁶' if q.endswith('/E') else '')))
     role_s = skyline_roles(sn)
     dump('sincerely.json', dict(notes=compact(sn, extra=role_s), chords=sch,
-                                bars=[round(x - C['sin_start'], 4) for x in C['sin_bars']]))
+                                bars=[round(x - C['sin_b'], 4) for x in C['sin_b_bars']]))
 
     # ---- Frieren: the theme (layer 05) and the finale (rebuild) ---------------
-    fa = [n for n in segments.notes('frieren_a') if n['start'] < C['fri_a_src'][1]]
+    fa = segments.notes('frieren_a')
     dump('frieren_a.json', dict(notes=compact(fa)))
     fb_all = segments.notes('frieren_b')
     a, b = C['reb_src']
@@ -192,21 +192,21 @@ def main():
     fbt = [round(film_timeline.bar_time('frieren_b', k) - a, 4) for k in range(322, 345)]
     dump('frieren_b.json', dict(notes=compact(fb), bars=fbt))
 
-    # ---- A4: the single note we take apart --------------------------------------
+    # ---- v3 additions: the EVA chorus, the first Sincerely chorus, Frieren's B-minor song ----
+    for name, fname, b0, b1 in [('eva_chorus', 'eva_chorus.json', 48, 62), ('sin_a', 'sin_a.json', 60, 77), ('fri_d', 'fri_d.json', 172, 190)]:
+        ns = segments.notes(name)
+        role_x = skyline_roles(ns)
+        song_ = segments.song(name)
+        bars = [round(film_timeline.bar_time(name, k), 4) for k in range(b0, min(b1, len(song_.bars)))]
+        dump(fname, dict(notes=compact(ns, extra=role_x), bars=bars, dur=round(film_timeline.seg_len(name), 4)))
+
+    # ---- A4: the measured partials inscribed on the magic circle -----------------
     h = a4_harmonics()
     dump('a4.json', h)
     print('A4 partials:', h['partials'])
 
-    # ---- numbers for the bill of materials -------------------------------------
-    stats = dict(
-        eva_notes=len(eva), sincerely_notes=len(sn), frieren_notes=len(fa) + len(fb),
-        total_notes=len(eva) + len(sn) + len(fa) + len(fb),
-        eva_bpm_max=max(t[1] for t in tempos), eva_bpm_min=min(t[1] for t in tempos if t[0] < C['phrase']),
-        semitone='1.059463094359295264561825', comma=round(3 ** 12 / 2 ** 19, 6),
-    )
-    dump('stats.json', stats)
-    print(stats)
-
+    used = len(eva) + len(segments.notes('eva_chorus')) + len(segments.notes('sin_a')) + len(sn) + len(segments.notes('fri_d')) + len(fa) + len(fb)
+    print('notes in the film:', used)
 
 if __name__ == '__main__':
     main()

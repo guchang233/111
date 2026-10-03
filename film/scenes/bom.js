@@ -17,7 +17,7 @@ export default {
     const tempos = D.eva_intro.tempos.filter((x) => x[0] < D.C.phrase);
     const pics = {
       octave: () => `<path d="${path((u) => [20 + u * 316, mid - Math.sin(u * 2 * Math.PI) * 30])}" fill="none" stroke="${INK}" stroke-width="1.4"/><path d="${path((u) => [20 + u * 316, mid + Math.sin(u * 2 * Math.PI) * 30])}" fill="none" stroke="${INK}" stroke-width="0.8" opacity="0.45"/><line x1="20" y1="${mid}" x2="336" y2="${mid}" stroke="${INK}" stroke-width="0.6" opacity="0.4"/><circle cx="178" cy="${mid}" r="4" fill="${MARK}"/><circle cx="20" cy="${mid}" r="3" fill="${INK}"/><circle cx="336" cy="${mid}" r="3" fill="${INK}"/>`,
-      fifth: () => `<path d="${path((u) => { const t = u * 2 * Math.PI; return [178 + Math.sin(2 * t) * 92, mid + Math.sin(3 * t + Math.PI / 4) * 52]; }, 900)}" fill="none" stroke="${INK}" stroke-width="1.3"/>`,
+      fifth: () => `<path d="${path((u) => { const t = u * 2 * Math.PI; return [178 + Math.sin(2 * t) * 92, mid + Math.sin(3 * t) * 52]; }, 900)}" fill="none" stroke="${INK}" stroke-width="1.3"/>`,
       triad: () => [4, 5, 6].map((k, i) => `<path d="${path((u) => [20 + u * 316, 22 + i * 37 - Math.sin(u * 2 * Math.PI * k) * 11], 500)}" fill="none" stroke="${INK}" stroke-width="1.2"/>`).join('') + `<line x1="336" y1="6" x2="336" y2="112" stroke="${MARK}" stroke-width="1" stroke-dasharray="2 3"/>`,
       semitone: () => {
         let s = `<line x1="20" y1="70" x2="336" y2="70" stroke="${INK}" stroke-width="1.2"/>`;

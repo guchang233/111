@@ -177,8 +177,9 @@ export default {
       const rOn = 0.3 + 0.7 * env(t, Cq.l4_et, SG, 0.3, 0.4);
       ctx.strokeStyle = rgba(INK, 0.12); ctx.lineWidth = 1;
       for (const [x, y] of [[620, 560], [1300, 560]]) { ctx.strokeRect(x - 200, y - 200, 400, 400); }
-      lissajous(ctx, 620, 560, 190, Math.PI / 4, 0.9 * lOn, INK);
-      lissajous(ctx, 1300, 560, 190, Math.PI / 4 + 2 * Math.PI * beat * te, 0.9 * rOn, C.mark);
+      // phase 0 gives the full 2:3 knot (at π/4 the curve folds back onto itself)
+      lissajous(ctx, 620, 560, 190, 0, 0.9 * lOn, INK);
+      lissajous(ctx, 1300, 560, 190, 2 * Math.PI * beat * te, 0.9 * rOn, C.mark);
       ctx.globalAlpha = 1;
     }
     show(st.costTop, cVis); show(st.costL, cVis); show(st.costR, cVis);

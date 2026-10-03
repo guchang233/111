@@ -55,7 +55,8 @@ const parts = await Promise.all(jobs);
 await browser.close(); server.close();
 fs.writeFileSync(path.join(tmp, 'list.txt'), parts.map((p) => `file '${p}'`).join('\n'));
 const audio = path.join(ROOT, 'out/audio/master.wav');
-const grain = scale >= 2 ? 'noise=c0s=6:c0f=t+u' : 'noise=c0s=5:c0f=t+u';
+const g = Number(arg('grain', scale >= 2 ? 4 : 3));          // light temporal dither: breaks banding, survives B站 transcoding
+const grain = g > 0 ? `noise=c0s=${g}:c0f=t+u` : 'null';
 const args = ['-y', '-loglevel', 'error', '-f', 'concat', '-safe', '0', '-i', path.join(tmp, 'list.txt'),
   '-ss', String(from), '-t', String(dur - from), '-i', audio,
   '-map', '0:v', '-map', '1:a', '-vf', `${grain},format=yuv420p`,

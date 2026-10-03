@@ -1,0 +1,209 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="frame-size" content="1920x1080">
+<title>F2 · 爆炸图</title>
+<link rel="stylesheet" href="/render/lib/base.css">
+<style>
+  .head { left: 120px; top: 104px; }
+  .kicker { font-family: var(--mono); font-size: 15px; letter-spacing: 0.22em; color: rgba(23,22,21,0.55); }
+  .kicker em { font-style: normal; color: var(--mark); }
+  .title { font-family: var(--serif-cn); font-weight: 700; font-size: 68px; letter-spacing: 0.02em; margin-top: 18px; line-height: 1; }
+  .sub { font-family: var(--serif-cn); font-weight: 400; font-size: 21px; color: rgba(23,22,21,0.62); margin-top: 22px; letter-spacing: 0.04em; }
+  .label { position: absolute; width: 420px; }
+  .label .no { font-family: var(--mono); font-size: 14px; letter-spacing: 0.2em; color: var(--mark); }
+  .label .nm { font-family: var(--serif-cn); font-weight: 600; font-size: 31px; margin-top: 8px; line-height: 1; }
+  .label .nm i { font-family: var(--serif-en); font-style: normal; font-weight: 600; font-size: 19px; letter-spacing: 0.16em; margin-left: 12px; color: rgba(23,22,21,0.6); }
+  .label .dt { font-family: var(--serif-cn); font-size: 16px; color: rgba(23,22,21,0.62); margin-top: 10px; letter-spacing: 0.03em; }
+  .label .dt b { font-family: var(--mono); font-weight: 400; color: var(--paper-text); }
+  .tb { position: absolute; right: 120px; top: 104px; border: 1.2px solid rgba(23,22,21,0.8); display: grid; grid-template-columns: 120px 150px 150px; font-family: var(--mono); font-size: 12.5px; letter-spacing: 0.08em; }
+  .tb div { border-right: 1px solid rgba(23,22,21,0.35); border-bottom: 1px solid rgba(23,22,21,0.35); padding: 9px 12px 8px; }
+  .tb div:nth-child(3n) { border-right: none; }
+  .tb .k { color: rgba(23,22,21,0.5); font-size: 10.5px; display: block; margin-bottom: 4px; letter-spacing: 0.16em; }
+  .tb .wide { grid-column: span 3; border-right: none; font-family: var(--serif-cn); font-size: 15px; letter-spacing: 0.02em; }
+  .tb .last { border-bottom: none; }
+  .note { position: absolute; left: 120px; bottom: 84px; font-family: var(--mono); font-size: 12px; letter-spacing: 0.16em; color: rgba(23,22,21,0.42); }
+</style>
+</head>
+<body class="paper">
+  <svg class="layer" id="paperTex" viewBox="0 0 1920 1080" preserveAspectRatio="none">
+    <filter id="mottle" x="0" y="0" width="100%" height="100%">
+      <feTurbulence type="fractalNoise" baseFrequency="0.0035 0.006" numOctaves="4" seed="3"/>
+      <feColorMatrix type="matrix" values="0 0 0 0 0.35  0 0 0 0 0.3  0 0 0 0 0.22  0 0 0 0.55 -0.2"/>
+    </filter>
+    <rect width="1920" height="1080" filter="url(#mottle)" opacity="0.16"/>
+  </svg>
+  <svg class="layer" id="draw" viewBox="0 0 1920 1080"></svg>
+
+  <div class="abs head">
+    <div class="kicker">LAYER 01 <em>/</em> 06 &nbsp;·&nbsp; EXPLODED VIEW</div>
+    <div class="title">声部</div>
+    <div class="sub">一段钢琴改编，拆成四个零件。</div>
+  </div>
+  <div id="labels"></div>
+
+  <div class="tb">
+    <div><span class="k">DWG NO.</span>01</div>
+    <div><span class="k">SCALE</span>1 : 1</div>
+    <div><span class="k">UNIT</span>Hz · s</div>
+    <div class="wide"><span class="k">SOURCE</span>残酷天使的行动纲领 · 钢琴改编 Animenz · 0:00–0:24</div>
+    <div class="last"><span class="k">BARS</span>8</div>
+    <div class="last"><span class="k">TEMPO</span>♩ = 132</div>
+    <div class="last"><span class="k">PARTS</span>4</div>
+  </div>
+  <div class="note">STYLE FRAME — 数据为示意 / PLACEHOLDER DATA</div>
+
+<script type="module">
+  import { fontsReady, grain, ready, rng } from '/render/lib/frame.js';
+
+  const NS = 'http://www.w3.org/2000/svg';
+  const svg = document.getElementById('draw');
+  const el = (tag, attrs, parent = svg) => { const e = document.createElementNS(NS, tag); for (const k in attrs) e.setAttribute(k, attrs[k]); parent.appendChild(e); return e; };
+  const INK = '#171615', MARK = '#c3402e', PAPER = '#ece7dd';
+
+  // ---- placeholder piano-roll data (8 bars of 4/4, time in beats, pitch in MIDI) ----
+  const R = rng(42);
+  const BEATS = 32, PMIN = 28, PMAX = 96;
+  const melody = [], harmony = [], bass = [], accents = [];
+  { // a phrase-shaped stepwise line
+    let t = 0, p = 76; const scale = [0, 2, 3, 5, 7, 8, 10];
+    const snap = (m) => { const o = Math.floor((m - 64) / 12), r = ((m - 64) % 12 + 12) % 12; let best = scale[0]; for (const s of scale) if (Math.abs(s - r) < Math.abs(best - r)) best = s; return 64 + o * 12 + best; };
+    while (t < BEATS) {
+      const d = [0.5, 0.5, 1, 1, 1.5, 2][Math.floor(R() * 6)];
+      const phrase = Math.sin((t / BEATS) * Math.PI * 2) * 6;
+      p = snap(Math.max(66, Math.min(85, p + Math.round((R() - 0.5) * 5) + (phrase > 0 ? 0.6 : -0.4))));
+      melody.push([t, Math.min(d, BEATS - t), p]); t += d;
+    }
+  }
+  const chords = [[57, 60, 64], [55, 59, 62], [53, 57, 60], [52, 55, 59], [57, 60, 64], [53, 57, 62], [55, 59, 62], [56, 59, 64]];
+  for (let bar = 0; bar < 8; bar++) {
+    const c = chords[bar];
+    for (const off of [0, 2]) for (const n of c) harmony.push([bar * 4 + off + (off ? 0 : 0), 1.86, n + 7]);
+    harmony.push([bar * 4 + 1.5, 0.45, c[2] + 12], [bar * 4 + 3.5, 0.45, c[1] + 12]);
+    const root = c[0] - 24;
+    bass.push([bar * 4, 1.9, root - 12], [bar * 4, 1.9, root], [bar * 4 + 2, 1.9, root + 7 - 12], [bar * 4 + 3, 0.9, root - 12]);
+    for (let b = 0; b < 4; b++) accents.push([bar * 4 + b, b === 0 ? 1 : b === 2 ? 0.72 : 0.5]);
+    accents.push([bar * 4 + 1.5, 0.6]); // a syncopation, marked in red
+  }
+
+  // ---- axonometric projection: vertical panels, exploded along the vertical axis ----
+  const W = 1000;                           // 8 bars, world units
+  const yaw = -24 * Math.PI / 180, pitch = 10 * Math.PI / 180, S = 0.9;
+  const OX = 660, OY = 912, T = 15;         // T = panel thickness
+  const P = (X, Y, Z) => {
+    const x1 = X * Math.cos(yaw) + Z * Math.sin(yaw);
+    const z1 = -X * Math.sin(yaw) + Z * Math.cos(yaw);
+    const y2 = Y * Math.cos(pitch) - z1 * Math.sin(pitch);
+    return [OX + x1 * S, OY - y2 * S];
+  };
+  const tx = (beat) => (beat / BEATS) * W;
+  const poly = (pts) => pts.map((p) => p.map((v) => v.toFixed(2)).join(',')).join(' ');
+  const ST = 5.4;                           // world units per semitone
+
+  const sheets = [
+    { id: 'P-04', name: '时值', en: 'TIME',    dt: '拍 · 小节 · 重音，切分标红', h: 104, notes: null },
+    { id: 'P-03', name: '低音', en: 'BASS',    dt: '左手 · <b>32</b> 个音 · 音域 <b>A0–A3</b>', lo: 20, hi: 46, notes: bass },
+    { id: 'P-02', name: '和声', en: 'HARMONY', dt: '右手内声部 · <b>64</b> 个音', lo: 58, hi: 85, notes: harmony },
+    { id: 'P-01', name: '旋律', en: 'MELODY',  dt: '右手高声部 · <b>' + melody.length + '</b> 个音 · 音域 <b>F♯4–C♯6</b>', lo: 63, hi: 88, notes: melody },
+  ];
+  const GAPY = 62;
+  let y0 = 0;
+  for (const s of sheets) { if (!s.h) s.h = (s.hi - s.lo) * ST; s.y0 = y0; y0 += s.h + GAPY; }
+
+  // dashed assembly lines through the left and right edges
+  for (const X of [0, W]) {
+    const a = P(X, -30, 0), b = P(X, y0 - GAPY + 30, 0);
+    el('line', { x1: a[0], y1: a[1], x2: b[0], y2: b[1], stroke: INK, 'stroke-width': 0.8, 'stroke-dasharray': '2 6', opacity: 0.5 });
+  }
+
+  const anchors = [];
+  let topNote = null;
+  sheets.forEach((s, i) => {
+    const g = el('g', {});
+    const Y0 = s.y0, Y1 = s.y0 + s.h;
+    const front = [P(0, Y0, 0), P(W, Y0, 0), P(W, Y1, 0), P(0, Y1, 0)];
+    const top = [P(0, Y1, 0), P(W, Y1, 0), P(W, Y1, -T), P(0, Y1, -T)];
+    const side = [P(W, Y0, 0), P(W, Y0, -T), P(W, Y1, -T), P(W, Y1, 0)];
+    el('polygon', { points: poly(top), fill: '#d9d2c6', stroke: INK, 'stroke-width': 1 }, g);
+    el('polygon', { points: poly(side), fill: '#cfc8bb', stroke: INK, 'stroke-width': 1 }, g);
+    el('polygon', { points: poly(front), fill: '#f1ede5', stroke: INK, 'stroke-width': 1.3 }, g);
+    for (let b = 1; b < BEATS; b++) {
+      const a = P(tx(b), Y0, 0), c = P(tx(b), Y1, 0);
+      el('line', { x1: a[0], y1: a[1], x2: c[0], y2: c[1], stroke: INK, 'stroke-width': b % 4 === 0 ? 0.7 : 0.35, opacity: b % 4 === 0 ? 0.34 : 0.15 }, g);
+    }
+    if (s.notes) {
+      const yOf = (m) => Y0 + (m - s.lo) * ST;
+      for (const [t, d, p] of s.notes) {
+        const h = s.id === 'P-01' ? 5 : 4.2;
+        const q = [P(tx(t), yOf(p) - h / 2, 0), P(tx(t + d) - 2, yOf(p) - h / 2, 0), P(tx(t + d) - 2, yOf(p) + h / 2, 0), P(tx(t), yOf(p) + h / 2, 0)];
+        el('polygon', { points: poly(q), fill: INK }, g);
+        if (s.id === 'P-01' && (!topNote || p > topNote.p)) topNote = { p, c: P(tx(t + d / 2), yOf(p), 0) };
+      }
+    } else {
+      for (const [t, v] of accents) {
+        const red = t % 1 !== 0;
+        const a = P(tx(t), Y0 + 10, 0), c = P(tx(t), Y0 + 10 + v * (s.h - 40), 0);
+        el('line', { x1: a[0], y1: a[1], x2: c[0], y2: c[1], stroke: red ? MARK : INK, 'stroke-width': 1.2 }, g);
+        el('circle', { cx: c[0], cy: c[1], r: 3.2, fill: red ? MARK : INK }, g);
+      }
+      for (let bar = 0; bar < 8; bar++) {
+        const a = P(tx(bar * 4) + 8, Y1 - 18, 0);
+        el('text', { x: a[0], y: a[1], 'font-family': 'IBM Plex Mono', 'font-size': 10.5, fill: INK, opacity: 0.55 }, g).textContent = String(bar + 1).padStart(2, '0');
+      }
+    }
+    anchors[i] = P(0, (Y0 + Y1) / 2, 0);
+  });
+
+  // red-pencil markup: the highest note of the melody
+  if (topNote) {
+    const [cx, cy] = topNote.c;
+    el('circle', { cx, cy, r: 15, fill: 'none', stroke: MARK, 'stroke-width': 1.4 });
+    el('polyline', { points: `${cx + 11},${cy - 11} ${cx + 58},${cy - 58} ${cx + 250},${cy - 58}`, fill: 'none', stroke: MARK, 'stroke-width': 1.1 });
+    const t1 = el('text', { x: cx + 66, y: cy - 67, 'font-family': 'Noto Serif SC', 'font-size': 15, fill: MARK });
+    t1.textContent = '最高音 C♯6 · 1108.7 Hz';
+  }
+
+  // dimension line under the bottom panel: 8 bars = 14.5 s at 132 bpm
+  {
+    const yb = -46;
+    const a = P(0, yb, 0), b = P(W, yb, 0);
+    el('line', { x1: a[0], y1: a[1], x2: b[0], y2: b[1], stroke: INK, 'stroke-width': 0.9 });
+    for (const q of [a, b]) {
+      const u = P(0, yb - 8, 0), v = P(0, yb + 8, 0); const dx = v[0] - u[0], dy = v[1] - u[1];
+      el('line', { x1: q[0] - dx, y1: q[1] - dy, x2: q[0] + dx, y2: q[1] + dy, stroke: INK, 'stroke-width': 0.9 });
+    }
+    const m = P(W / 2, yb - 22, 0);
+    const ang = Math.atan2(b[1] - a[1], b[0] - a[0]) * 180 / Math.PI;
+    const tt = el('text', { x: m[0], y: m[1], 'text-anchor': 'middle', 'font-family': 'IBM Plex Mono', 'font-size': 13, fill: INK, 'letter-spacing': '0.08em', transform: `rotate(${ang.toFixed(2)} ${m[0]} ${m[1]})` });
+    tt.textContent = '8 BARS = 32 BEATS = 14.55 s';
+  }
+
+  // labels + leader lines (top = P-01)
+  const labels = document.getElementById('labels');
+  [3, 2, 1, 0].forEach((i, k) => {
+    const s = sheets[i];
+    const [ax, ay] = anchors[i];
+    const y = ay - 46;
+    const d = document.createElement('div');
+    d.className = 'label'; d.style.left = '120px'; d.style.top = y + 'px';
+    d.innerHTML = `<div class="no">${s.id}</div><div class="nm">${s.name}<i>${s.en}</i></div><div class="dt">${s.dt}</div>`;
+    labels.appendChild(d);
+    const lx = 500, ly = y + 46;
+    el('polyline', { points: `${lx},${ly} ${ax - 6},${ay}`, fill: 'none', stroke: INK, 'stroke-width': 0.9 });
+    el('circle', { cx: ax, cy: ay, r: 3.6, fill: INK });
+    el('line', { x1: lx, y1: ly - 6, x2: lx, y2: ly + 6, stroke: INK, 'stroke-width': 0.9 });
+  });
+
+  await fontsReady([
+    ['700 60px "Noto Serif SC"', '声部'], ['600 30px "Noto Serif SC"', '旋律和声低音时值'],
+    ['400 20px "Noto Serif SC"', '一段钢琴改编，拆成四个零件。右手高声部内左拍小节重音切分标红个音域残酷天使的行动纲领琴编数据为示意'],
+    ['600 19px "Cormorant Garamond"', 'MELODY HARMONY BASS TIME'],
+    ['400 14px "IBM Plex Mono"', 'LAYER 01 / 06 EXPLODED VIEW P-0123456789 DWG NO. SCALE UNIT Hz·s SOURCE BARS TEMPO PARTS ♩=– BEATS'],
+    ['400 15px "Noto Serif SC"', '最高音 C♯6 · 1108.7 Hz'],
+  ]);
+  grain({ seed: 5, opacity: 0.07 });
+  ready();
+</script>
+</body>
+</html>

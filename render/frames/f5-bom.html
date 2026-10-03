@@ -1,0 +1,128 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="frame-size" content="1920x1080">
+<title>F5 · 零件清单</title>
+<link rel="stylesheet" href="/render/lib/base.css">
+<style>
+  .kicker { left: 120px; top: 104px; font-family: var(--mono); font-size: 15px; letter-spacing: 0.22em; color: rgba(23,22,21,0.55); }
+  .kicker em { font-style: normal; color: var(--mark); }
+  .title { left: 120px; top: 140px; font-family: var(--serif-cn); font-weight: 700; font-size: 68px; letter-spacing: 0.02em; line-height: 1; }
+  .sub { left: 120px; top: 230px; font-family: var(--serif-cn); font-size: 21px; color: rgba(23,22,21,0.62); letter-spacing: 0.04em; }
+  .meta { right: 120px; top: 104px; text-align: right; font-family: var(--mono); font-size: 12.5px; letter-spacing: 0.16em; color: rgba(23,22,21,0.5); line-height: 2; }
+  .grid { left: 120px; top: 312px; width: 1680px; display: grid; grid-template-columns: repeat(4, 1fr); gap: 22px; }
+  .card { position: relative; height: 318px; border: 1.1px solid rgba(23,22,21,0.72); padding: 18px 22px 0; box-sizing: border-box; }
+  .card.missing { border: 1.3px dashed var(--mark); }
+  .no { font-family: var(--mono); font-size: 13px; letter-spacing: 0.2em; color: var(--mark); }
+  .qty { position: absolute; right: 22px; top: 18px; font-family: var(--mono); font-size: 11px; letter-spacing: 0.16em; color: rgba(23,22,21,0.42); }
+  .pic { height: 118px; margin: 10px -4px 6px; }
+  .pic svg { width: 100%; height: 100%; overflow: visible; }
+  .val { font-family: var(--mono); font-size: 34px; letter-spacing: 0.01em; line-height: 1.1; white-space: nowrap; }
+  .val.serif { font-family: var(--serif-en); font-size: 40px; font-weight: 500; }
+  .val sub { font-size: 0.55em; vertical-align: -0.18em; margin-left: 1px; margin-right: 2px; }
+  .nm { font-family: var(--serif-cn); font-weight: 600; font-size: 22px; margin-top: 10px; }
+  .nm i { font-family: var(--serif-en); font-style: normal; font-weight: 600; font-size: 15px; letter-spacing: 0.16em; margin-left: 10px; color: rgba(23,22,21,0.55); }
+  .also { font-family: var(--serif-cn); font-size: 14.5px; color: rgba(23,22,21,0.62); margin-top: 8px; letter-spacing: 0.03em; }
+  .also b { font-family: var(--mono); font-weight: 400; font-size: 11px; letter-spacing: 0.16em; color: rgba(23,22,21,0.42); margin-right: 8px; }
+  .missing .val { color: var(--mark); font-family: var(--serif-cn); font-size: 30px; font-weight: 500; letter-spacing: 0.06em; }
+</style>
+</head>
+<body class="paper">
+  <svg class="layer" viewBox="0 0 1920 1080" preserveAspectRatio="none">
+    <filter id="mottle" x="0" y="0" width="100%" height="100%">
+      <feTurbulence type="fractalNoise" baseFrequency="0.0035 0.006" numOctaves="4" seed="17"/>
+      <feColorMatrix type="matrix" values="0 0 0 0 0.35  0 0 0 0 0.3  0 0 0 0 0.22  0 0 0 0.55 -0.2"/>
+    </filter>
+    <rect width="1920" height="1080" filter="url(#mottle)" opacity="0.16"/>
+  </svg>
+  <div class="abs kicker">BILL OF MATERIALS <em>/</em> 零件清单</div>
+  <div class="abs title">拆完了。</div>
+  <div class="abs sub">三首钢琴曲，一共拆出八个零件。</div>
+  <div class="abs meta">DWG NO. 99 &nbsp;·&nbsp; BOM<br>STYLE FRAME — 节奏零件为示意</div>
+  <div class="abs grid" id="grid"></div>
+
+<script type="module">
+  import { fontsReady, grain, ready } from '/render/lib/frame.js';
+  const INK = '#171615', MARK = '#c3402e';
+  const W = 356, H = 118, mid = H / 2;
+  const path = (f, n = 400, x0 = 0, x1 = W) => { let d = ''; for (let i = 0; i <= n; i++) { const u = i / n; const [x, y] = f(u); d += (i ? 'L' : 'M') + x.toFixed(2) + ',' + y.toFixed(2); } return d; };
+
+  const pics = {
+    octave: () => { // a string vibrating in two halves
+      const a = path((u) => [20 + u * 316, mid - Math.sin(u * 2 * Math.PI) * 30]);
+      const b = path((u) => [20 + u * 316, mid + Math.sin(u * 2 * Math.PI) * 30]);
+      return `<path d="${a}" fill="none" stroke="${INK}" stroke-width="1.4"/><path d="${b}" fill="none" stroke="${INK}" stroke-width="0.8" opacity="0.45"/>
+        <line x1="20" y1="${mid}" x2="336" y2="${mid}" stroke="${INK}" stroke-width="0.6" opacity="0.4"/>
+        <circle cx="178" cy="${mid}" r="4" fill="${MARK}"/><circle cx="20" cy="${mid}" r="3" fill="${INK}"/><circle cx="336" cy="${mid}" r="3" fill="${INK}"/>`;
+    },
+    fifth: () => { // Lissajous 3:2
+      const d = path((u) => { const t = u * 2 * Math.PI; return [178 + Math.sin(2 * t + Math.PI / 4) * 92, mid + Math.sin(3 * t) * 52]; }, 900);
+      return `<path d="${d}" fill="none" stroke="${INK}" stroke-width="1.3"/>`;
+    },
+    triad: () => { // three waves 4:5:6 locked together
+      const rows = [4, 5, 6].map((k, i) => `<path d="${path((u) => [20 + u * 316, 22 + i * 37 - Math.sin(u * 2 * Math.PI * k) * 11], 500)}" fill="none" stroke="${INK}" stroke-width="1.2"/>`).join('');
+      return rows + `<line x1="336" y1="6" x2="336" y2="112" stroke="${MARK}" stroke-width="1" stroke-dasharray="2 3"/>`;
+    },
+    semitone: () => { // one octave on a log ruler: 12 equal steps
+      let s = `<line x1="20" y1="70" x2="336" y2="70" stroke="${INK}" stroke-width="1.2"/>`;
+      for (let k = 0; k <= 12; k++) { const x = 20 + (k / 12) * 316, big = k % 12 === 0; s += `<line x1="${x}" y1="${70 - (big ? 26 : 14)}" x2="${x}" y2="70" stroke="${k === 1 ? MARK : INK}" stroke-width="${big ? 1.4 : 1}"/>`; }
+      const just = [16 / 15, 9 / 8, 6 / 5, 5 / 4, 4 / 3, 45 / 32, 3 / 2, 8 / 5, 5 / 3, 9 / 5, 15 / 8];
+      for (const r of just) { const x = 20 + Math.log2(r) * 316; s += `<line x1="${x}" y1="72" x2="${x}" y2="82" stroke="${INK}" stroke-width="0.8" opacity="0.5"/>`; }
+      s += `<text x="20" y="104" font-family="IBM Plex Mono" font-size="11" fill="${INK}" opacity="0.6">1</text><text x="336" y="104" text-anchor="end" font-family="IBM Plex Mono" font-size="11" fill="${INK}" opacity="0.6">2</text>`;
+      s += `<text x="${20 + 316 / 12 + 4}" y="40" font-family="IBM Plex Mono" font-size="11" fill="${MARK}">×1.0595</text>`;
+      return s;
+    },
+    rhythm: () => { // Euclidean necklace E(3,8)
+      let s = `<circle cx="178" cy="${mid}" r="48" fill="none" stroke="${INK}" stroke-width="0.8" opacity="0.5"/>`;
+      const on = [0, 3, 6], pts = [];
+      for (let k = 0; k < 8; k++) { const a = -Math.PI / 2 + (k / 8) * 2 * Math.PI, x = 178 + 48 * Math.cos(a), y = mid + 48 * Math.sin(a); const hit = on.includes(k); if (hit) pts.push(`${x.toFixed(1)},${y.toFixed(1)}`); s += `<circle cx="${x}" cy="${y}" r="${hit ? 5.5 : 3}" fill="${hit ? INK : '#ece7dd'}" stroke="${INK}" stroke-width="1"/>`; }
+      return `<polygon points="${pts.join(' ')}" fill="none" stroke="${MARK}" stroke-width="1.1"/>` + s;
+    },
+    timbre: () => { // harmonic spectrum
+      const amp = [1, 0.46, 0.24, 0.14, 0.085, 0.055, 0.036, 0.024, 0.016, 0.011, 0.007, 0.005];
+      let s = `<line x1="20" y1="104" x2="336" y2="104" stroke="${INK}" stroke-width="0.8"/>`;
+      amp.forEach((a, i) => { const x = 34 + i * 26, h = Math.max(2, 92 * Math.pow(a, 0.62)); s += `<rect x="${x - 3.5}" y="${104 - h}" width="7" height="${h}" fill="${i === 0 ? MARK : INK}"/>`; });
+      return s;
+    },
+    a440: () => `<path d="${path((u) => [20 + u * 316, mid - Math.sin(u * 2 * Math.PI * 3) * 34], 500)}" fill="none" stroke="${INK}" stroke-width="1.4"/><line x1="20" y1="${mid}" x2="336" y2="${mid}" stroke="${INK}" stroke-width="0.6" opacity="0.4"/>`,
+    missing: () => '',
+  };
+
+  const parts = [
+    { no: 'P-01', pic: 'octave',   val: '2 : 1',        nm: '八度', en: 'OCTAVE',        also: '几乎所有文明的音乐' },
+    { no: 'P-02', pic: 'fifth',    val: '3 : 2',        nm: '纯五度', en: 'FIFTH',        also: 'TRAPPIST-1 的行星轨道' },
+    { no: 'P-03', pic: 'triad',    val: '4 : 5 : 6',    nm: '大三和弦', en: 'MAJOR TRIAD', also: '每一个音自带的泛音里' },
+    { no: 'P-04', pic: 'semitone', val: '1.059463…',    nm: '半音', en: 'SEMITONE',      also: '朱载堉，1584' },
+    { no: 'P-05', pic: 'rhythm',   val: 'E(3, 8)',      nm: '节奏', en: 'RHYTHM',        also: '中子加速器的脉冲时序' },
+    { no: 'P-06', pic: 'timbre',   val: 'Σ a<sub>n</sub> sin nωt', nm: '音色', en: 'TIMBRE',        also: '耳蜗 · JPEG · 核磁共振', serif: true },
+    { no: 'P-07', pic: 'a440',     val: '440 Hz',       nm: '标准音', en: 'CONCERT A',    also: '1939 年伦敦国际会议' },
+    { no: 'P-08', pic: 'missing',  val: '无法拆解',      nm: '打动你的那部分', en: '',       also: '', missing: true },
+  ];
+  const grid = document.getElementById('grid');
+  for (const p of parts) {
+    const c = document.createElement('div');
+    c.className = 'card' + (p.missing ? ' missing' : '');
+    c.innerHTML = `<div class="no">${p.no}</div><div class="qty">${p.missing ? 'QTY ?' : 'QTY 1'}</div>
+      <div class="pic"><svg viewBox="0 0 ${W} ${H}">${pics[p.pic]()}</svg></div>
+      <div class="val${p.serif ? ' serif' : ''}">${p.val}</div>
+      <div class="nm">${p.nm}${p.en ? `<i>${p.en}</i>` : ''}</div>
+      ${p.also ? `<div class="also"><b>ALSO IN</b>${p.also}</div>` : ''}`;
+    grid.appendChild(c);
+  }
+
+  await fontsReady([
+    ['700 68px "Noto Serif SC"', '拆完了。'],
+    ['400 21px "Noto Serif SC"', '三首钢琴曲，一共拆出八个零件。'],
+    ['600 22px "Noto Serif SC"', '八度纯五大三和弦半音节奏色标准打动你的那部分'],
+    ['400 14px "Noto Serif SC"', '几乎所有文明的音乐行星轨道每一个自带泛里朱载堉中子加速器脉冲时序耳蜗核磁共振年伦敦国际会议无法拆解'],
+    ['500 30px "Noto Serif SC"', '无法拆解'],
+    ['400 34px "IBM Plex Mono"', '2 : 1 3 4 5 6 1.059463… E(3, 8) 440 Hz P-0 QTY ? ALSO IN ×1.0595 BILL OF MATERIALS / DWG NO. 99 · BOM STYLE FRAME'],
+    ['500 40px "Cormorant Garamond"', 'Σ aₙ sin nωt'],
+    ['600 15px "Cormorant Garamond"', 'OCTAVE FIFTH MAJOR TRIAD SEMITONE RHYTHM TIMBRE CONCERT A'],
+  ]);
+  grain({ seed: 13, opacity: 0.07 });
+  ready();
+</script>
+</body>
+</html>

@@ -1,0 +1,83 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="frame-size" content="1920x1080">
+<title>F3 · Sincerely</title>
+<link rel="stylesheet" href="/render/lib/base.css">
+<style>
+  body.paper { background: #efe9df; }
+  .kicker { left: 120px; top: 104px; font-family: var(--mono); font-size: 15px; letter-spacing: 0.22em; color: rgba(23,22,21,0.55); }
+  .kicker .gem { display: inline-block; width: 9px; height: 9px; background: var(--violet); transform: rotate(45deg) translateY(-2px); margin-right: 16px; }
+  .letter { left: 300px; top: 236px; width: 1150px; color: #1d1b19; }
+  .tw { font-family: var(--type), var(--serif-cn); }
+  .cn { font-family: var(--serif-cn); font-weight: 500; }
+  .line { font-size: 30px; line-height: 1.95; letter-spacing: 0.06em; white-space: nowrap; }
+  .num { font-family: var(--type); font-size: 74px; letter-spacing: 0.01em; line-height: 1.25; margin: 22px 0 6px -4px; white-space: nowrap; }
+  .gap { height: 34px; }
+  .sig { font-family: var(--type); font-size: 34px; margin-top: 8px; }
+  .caret { display: inline-block; width: 3px; height: 38px; background: var(--violet); vertical-align: -6px; margin-left: 8px; }
+  .ch { display: inline-block; }
+  .vert { right: 132px; top: 236px; writing-mode: vertical-rl; font-family: var(--serif-cn); font-weight: 500; font-size: 26px; letter-spacing: 0.5em; color: rgba(23,22,21,0.78); }
+  .vert small { font-size: 18px; letter-spacing: 0.4em; color: rgba(23,22,21,0.5); margin-top: 26px; display: inline-block; }
+  .src { left: 120px; bottom: 84px; font-family: var(--mono); font-size: 12px; letter-spacing: 0.16em; color: rgba(23,22,21,0.45); }
+</style>
+</head>
+<body class="paper">
+  <svg class="layer" viewBox="0 0 1920 1080" preserveAspectRatio="none">
+    <filter id="mottle" x="0" y="0" width="100%" height="100%">
+      <feTurbulence type="fractalNoise" baseFrequency="0.004 0.007" numOctaves="4" seed="9"/>
+      <feColorMatrix type="matrix" values="0 0 0 0 0.35  0 0 0 0 0.3  0 0 0 0 0.22  0 0 0 0.55 -0.2"/>
+    </filter>
+    <rect width="1920" height="1080" filter="url(#mottle)" opacity="0.16"/>
+  </svg>
+
+  <div class="abs kicker"><span class="gem"></span>LAYER 04 / 06 &nbsp;·&nbsp; 音高 PITCH</div>
+
+  <div class="abs letter" id="letter">
+    <div class="line cn typed">一五八四年，朱载堉算出了这个数：</div>
+    <div class="num typed">1.059463094359295264561825</div>
+    <div class="line cn typed">把它连乘十二次，正好是 2。</div>
+    <div class="gap"></div>
+    <div class="line cn typed">于是，每个五度窄了 0.11%，每个三度宽了 0.79%。</div>
+    <div class="line cn typed">没有一个和弦是完美的。</div>
+    <div class="line cn typed">但从此，十二个调都能弹了。</div>
+    <div class="gap"></div>
+    <div class="sig typed">Sincerely,</div>
+  </div>
+
+  <div class="abs vert">朱载堉 · 律学新说<br><small>明 · 万历十二年</small></div>
+  <div class="abs src">SINCERELY — 紫罗兰永恒花园 OP · 钢琴改编 ANIMENZ &nbsp;·&nbsp; STYLE FRAME</div>
+
+<script type="module">
+  import { fontsReady, grain, ready, rng } from '/render/lib/frame.js';
+  await fontsReady([
+    ['400 84px "Courier Prime"', '1.059463094359295264561825 Sincerely, 0.11% 0.79% 2'],
+    ['500 30px "Noto Serif SC"', '一五八四年，朱载堉算出了这个数：把它连乘十二次，正好是。于是每个五度窄了三度宽没有一和弦完美的但从此调都能弹律学新说明万历'],
+    ['400 15px "IBM Plex Mono"', 'LAYER 04 / 06 音高 PITCH SINCERELY — OP ANIMENZ STYLE FRAME'],
+  ]);
+  // Typewriter imperfection: every struck glyph sits a little off its line and
+  // carries a little more or less ink. Deterministic, so frames never flicker.
+  const R = rng(1584);
+  for (const node of document.querySelectorAll('.typed')) {
+    const text = node.textContent;
+    node.textContent = '';
+    for (const c of text) {
+      const s = document.createElement('span');
+      s.className = 'ch';
+      s.textContent = c === ' ' ? ' ' : c;
+      const dy = (R() - 0.5) * 1.4, ink = 0.8 + R() * 0.2, rot = (R() - 0.5) * 0.7;
+      s.style.transform = `translateY(${dy.toFixed(2)}px) rotate(${rot.toFixed(2)}deg)`;
+      s.style.opacity = ink.toFixed(3);
+      s.style.textShadow = `0 0 ${(0.3 + R() * 0.5).toFixed(2)}px rgba(29,27,25,0.55)`;
+      node.appendChild(s);
+    }
+  }
+  const caret = document.createElement('span');
+  caret.className = 'caret';
+  document.querySelector('.sig').appendChild(caret);
+  grain({ seed: 3, opacity: 0.07 });
+  ready();
+</script>
+</body>
+</html>

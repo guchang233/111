@@ -1,0 +1,118 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="frame-size" content="1920x1080">
+<title>F4 · 魔法阵</title>
+<link rel="stylesheet" href="/render/lib/base.css">
+<style>
+  body.night { background: radial-gradient(ellipse 60% 70% at 33% 52%, #11151b 0%, #090b0e 62%, #07080a 100%); color: var(--ink-text); }
+  .kicker { left: 120px; top: 104px; font-family: var(--mono); font-size: 15px; letter-spacing: 0.22em; color: rgba(236,231,222,0.5); }
+  .kicker .ring { display: inline-block; width: 10px; height: 10px; border: 1.2px solid var(--frieren); border-radius: 50%; margin-right: 16px; transform: translateY(1px); }
+  .head { right: 120px; top: 98px; text-align: right; }
+  .head .t { font-family: var(--serif-cn); font-weight: 300; font-size: 46px; letter-spacing: 0.08em; color: #eee9e0; }
+  .head .f { font-family: var(--serif-en); font-style: italic; font-size: 30px; color: rgba(205,185,134,0.9); margin-top: 18px; letter-spacing: 0.02em; }
+  .src { left: 120px; bottom: 84px; font-family: var(--mono); font-size: 12px; letter-spacing: 0.16em; color: rgba(236,231,222,0.36); }
+  .legend { right: 120px; bottom: 84px; font-family: var(--mono); font-size: 12px; letter-spacing: 0.14em; color: rgba(236,231,222,0.42); text-align: right; line-height: 2; }
+  .legend b { color: var(--frieren); font-weight: 400; }
+</style>
+</head>
+<body class="night">
+  <svg class="layer" id="draw" viewBox="0 0 1920 1080"></svg>
+  <div class="abs kicker"><span class="ring"></span>LAYER 05 / 06 &nbsp;·&nbsp; 音色 TIMBRE</div>
+  <div class="abs head">
+    <div class="t">一个音，是一组旋转的圆。</div>
+    <div class="f">x(t) = Σ aₙ sin(2π n f t + φₙ)</div>
+  </div>
+  <div class="abs src">葬送的芙莉莲 · 组曲 · 钢琴改编 ANIMENZ &nbsp;·&nbsp; STYLE FRAME — 泛音数据为示意</div>
+  <div class="abs legend">n = 1 … 12 &nbsp;<b>○</b>&nbsp; 每个圆 = 一个泛音<br>半径 = 振幅 aₙ &nbsp;·&nbsp; 转速 = n × f</div>
+
+<script type="module">
+  import { fontsReady, grain, ready } from '/render/lib/frame.js';
+  const NS = 'http://www.w3.org/2000/svg';
+  const svg = document.getElementById('draw');
+  const el = (tag, attrs, parent = svg) => { const e = document.createElementNS(NS, tag); for (const k in attrs) e.setAttribute(k, attrs[k]); parent.appendChild(e); return e; };
+  const GOLD = '#cdb986', WHITE = '#ece7de';
+
+  // A plucked-string-like recipe of 12 harmonics (placeholder until we analyse the real recording)
+  const amp = [1, 0.46, 0.24, 0.14, 0.085, 0.055, 0.036, 0.024, 0.016, 0.011, 0.007, 0.005];
+  const ph = amp.map((_, i) => 1.15 * Math.sin(1.7 * (i + 1)) + 0.22 * (i + 1));
+  const CX = 640, CY = 566, K = 148;            // circle origin and pixels per unit amplitude
+  const theta0 = 0.9;
+
+  const defs = el('defs', {});
+  const glow = el('radialGradient', { id: 'glow' }, defs);
+  el('stop', { offset: '0%', 'stop-color': GOLD, 'stop-opacity': 0.55 }, glow);
+  el('stop', { offset: '100%', 'stop-color': GOLD, 'stop-opacity': 0 }, glow);
+
+  // ---- the magic circle: rings, ticks, a dodecagon, an inscription of real numbers ----
+  const R0 = 352, R1 = 330, R2 = 298, R3 = 272;
+  el('circle', { cx: CX, cy: CY, r: R0, fill: 'none', stroke: GOLD, 'stroke-width': 1.1, opacity: 0.8 });
+  el('circle', { cx: CX, cy: CY, r: R1, fill: 'none', stroke: GOLD, 'stroke-width': 0.6, opacity: 0.55 });
+  el('circle', { cx: CX, cy: CY, r: R2, fill: 'none', stroke: GOLD, 'stroke-width': 0.6, opacity: 0.55 });
+  el('circle', { cx: CX, cy: CY, r: R3, fill: 'none', stroke: GOLD, 'stroke-width': 0.5, opacity: 0.32, 'stroke-dasharray': '1 5' });
+  for (let i = 0; i < 360; i++) {
+    const a = (i / 360) * Math.PI * 2, long = i % 30 === 0, mid = i % 10 === 0;
+    const r1 = R0, r2 = R0 - (long ? 16 : mid ? 9 : 4);
+    el('line', { x1: CX + r1 * Math.cos(a), y1: CY + r1 * Math.sin(a), x2: CX + r2 * Math.cos(a), y2: CY + r2 * Math.sin(a), stroke: GOLD, 'stroke-width': long ? 1.1 : 0.6, opacity: long ? 0.9 : 0.5 });
+  }
+  const poly12 = [];
+  for (let i = 0; i < 12; i++) { const a = -Math.PI / 2 + (i / 12) * Math.PI * 2; poly12.push(`${(CX + R3 * Math.cos(a)).toFixed(2)},${(CY + R3 * Math.sin(a)).toFixed(2)}`); }
+  el('polygon', { points: poly12.join(' '), fill: 'none', stroke: GOLD, 'stroke-width': 0.6, opacity: 0.38 });
+  for (let i = 0; i < 12; i++) { // star {12/5}: one closed line through all twelve
+    const a = -Math.PI / 2 + (i / 12) * Math.PI * 2, b = -Math.PI / 2 + (((i + 5) % 12) / 12) * Math.PI * 2;
+    el('line', { x1: CX + R3 * Math.cos(a), y1: CY + R3 * Math.sin(a), x2: CX + R3 * Math.cos(b), y2: CY + R3 * Math.sin(b), stroke: GOLD, 'stroke-width': 0.5, opacity: 0.16 });
+  }
+  // inscription: the harmonic series written around the ring
+  const Rt = (R1 + R2) / 2 - 5;
+  el('path', { id: 'insc', d: `M ${CX - Rt} ${CY} a ${Rt} ${Rt} 0 1 1 ${2 * Rt} 0 a ${Rt} ${Rt} 0 1 1 ${-2 * Rt} 0`, fill: 'none' }, defs);
+  const words = amp.map((a, i) => `${i + 1}f · ${a.toFixed(3)}`).join('   ◦   ') + '   ◦   ';
+  const txt = el('text', { 'font-family': 'IBM Plex Mono', 'font-size': 13.5, fill: GOLD, 'letter-spacing': '0.16em', opacity: 0.85 });
+  const tp = el('textPath', { href: '#insc', textLength: (2 * Math.PI * Rt - 8).toFixed(1), lengthAdjust: 'spacing' }, txt);
+  tp.textContent = words;
+
+  // ---- epicycles ----
+  let x = CX, y = CY;
+  const joints = [[x, y]];
+  amp.forEach((a, i) => {
+    const n = i + 1, r = a * K, ang = n * theta0 + ph[i];
+    el('circle', { cx: x, cy: y, r, fill: 'none', stroke: i === 0 ? WHITE : GOLD, 'stroke-width': i === 0 ? 0.9 : 0.8, opacity: Math.max(0.28, 0.85 - i * 0.05) });
+    const nx = x + r * Math.cos(ang), ny = y - r * Math.sin(ang);
+    el('line', { x1: x, y1: y, x2: nx, y2: ny, stroke: WHITE, 'stroke-width': 1.1, opacity: 0.85 });
+    x = nx; y = ny; joints.push([x, y]);
+  });
+  for (const [jx, jy] of joints.slice(0, -1)) el('circle', { cx: jx, cy: jy, r: 2.2, fill: WHITE, opacity: 0.85 });
+
+  // ---- the waveform the circles are drawing ----
+  const WX = 1112, WW = 690, PER = 2.2;        // start x, width, periods shown
+  const yOf = (th) => CY - amp.reduce((s, a, i) => s + a * Math.sin((i + 1) * th + ph[i]), 0) * K;
+  const tipY = yOf(theta0);
+  el('line', { x1: x, y1: y, x2: WX, y2: tipY, stroke: WHITE, 'stroke-width': 0.8, 'stroke-dasharray': '3 5', opacity: 0.6 });
+  el('circle', { cx: x, cy: y, r: 26, fill: 'url(#glow)' });
+  el('circle', { cx: x, cy: y, r: 3.4, fill: WHITE });
+  let d = '';
+  for (let i = 0; i <= 1600; i++) {
+    const u = i / 1600, th = theta0 - u * PER * 2 * Math.PI;
+    d += (i ? 'L' : 'M') + (WX + u * WW).toFixed(2) + ',' + yOf(th).toFixed(2);
+  }
+  el('path', { d, fill: 'none', stroke: WHITE, 'stroke-width': 1.6, opacity: 0.95 });
+  el('circle', { cx: WX, cy: tipY, r: 3.4, fill: WHITE });
+  el('line', { x1: WX, y1: CY, x2: WX + WW, y2: CY, stroke: GOLD, 'stroke-width': 0.6, opacity: 0.4 });
+  for (let k = 0; k <= 4; k++) { // time ticks: one per half period
+    const tx = WX + (k / 4) * WW * (2 / PER) ;
+    if (tx > WX + WW) break;
+  }
+  const lbl = el('text', { x: WX + WW, y: CY + 30, 'text-anchor': 'end', 'font-family': 'IBM Plex Mono', 'font-size': 12, fill: GOLD, opacity: 0.75, 'letter-spacing': '0.14em' });
+  lbl.textContent = 't →';
+
+  await fontsReady([
+    ['300 46px "Noto Serif SC"', '一个音，是一组旋转的圆。'],
+    ['italic 400 30px "Cormorant Garamond"', 'x(t) = Σ aₙ sin(2π n f t + φₙ)'],
+    ['400 14px "IBM Plex Mono"', 'LAYER 05 / 06 音色 TIMBRE 0123456789.f·◦ n = … ○ t→'],
+    ['400 12px "Noto Serif SC"', '葬送的芙莉莲组曲钢琴改编泛音数据为示意每个圆一半径振幅转速'],
+  ]);
+  grain({ seed: 21, opacity: 0.1 });
+  ready();
+</script>
+</body>
+</html>

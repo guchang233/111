@@ -1,0 +1,61 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="frame-size" content="1440x1080">
+<title>封面 4:3</title>
+<link rel="stylesheet" href="/render/lib/base.css">
+<style>
+  body { width: 1440px; }
+  .t { position: absolute; font-family: var(--serif-cn); font-weight: 900; color: #f2eee6; line-height: 1; white-space: nowrap; transform-origin: 0 50%; }
+  .t1 { left: 104px; top: 262px; font-size: 168px; transform: scaleX(0.6); }
+  .t2 { left: 98px; top: 446px; font-size: 212px; transform: scaleX(0.6); }
+  .songs { left: 108px; top: 724px; font-family: var(--serif-cn); font-weight: 500; font-size: 30px; letter-spacing: 0.12em; color: rgba(242,238,230,0.78); }
+  .songs i { font-style: normal; color: var(--eva); margin: 0 14px; }
+  .by { left: 110px; top: 196px; font-family: var(--mono); font-size: 22px; letter-spacing: 0.3em; color: rgba(242,238,230,0.55); }
+</style>
+</head>
+<body class="dark">
+  <svg class="layer" id="kb" viewBox="0 0 1440 1080"></svg>
+  <div class="abs by">ANIMENZ × 3 &nbsp;·&nbsp; 4K</div>
+  <div class="t t1">把一首歌</div>
+  <div class="t t2">拆到只剩数字</div>
+  <div class="abs songs">EVA<i>/</i>紫罗兰永恒花园<i>/</i>葬送的芙莉莲</div>
+<script type="module">
+  import { fontsReady, grain, ready } from '/render/lib/frame.js';
+  const NS = 'http://www.w3.org/2000/svg';
+  const svg = document.getElementById('kb');
+  const el = (tag, a) => { const e = document.createElementNS(NS, tag); for (const k in a) e.setAttribute(k, a[k]); svg.appendChild(e); return e; };
+  // One octave of piano keys, exploded into parts, each labelled with its frequency ratio 2^(k/12).
+  const X0 = 924, Y0 = 236, KW = 40, GAP = 14, KH = 470;
+  const whites = [0, 2, 4, 5, 7, 9, 11, 12];
+  const blacks = { 1: 0, 3: 1, 6: 3, 8: 4, 10: 5 };     // semitone -> after which white index
+  const wx = (i) => X0 + i * (KW + GAP);
+  whites.forEach((k, i) => el('rect', { x: wx(i), y: Y0 + 120, width: KW, height: KH, fill: '#f2eee6' }));
+  // ratios printed vertically along each white key
+  whites.forEach((k, i) => {
+    const r = Math.pow(2, k / 12).toFixed(4);
+    const x = wx(i) + KW / 2, y = Y0 + 120 + KH - 18;
+    el('text', { x, y, 'font-family': 'IBM Plex Mono', 'font-size': 15, fill: '#0b0b0c', transform: `rotate(-90 ${x} ${y})`, 'dominant-baseline': 'middle', 'letter-spacing': '0.04em' }).textContent = r;
+  });
+  for (const [k, after] of Object.entries(blacks)) {
+    const w = Math.round(KW * 0.72), x = wx(after) + KW + GAP / 2 - w / 2, h = Math.round(KH * 0.64), y = Y0 - 40;
+    el('rect', { x, y, width: w, height: h, fill: 'none', stroke: '#f2eee6', 'stroke-width': 1.6 });
+    const cx = x + w / 2, cy = y + h - 16;
+    el('text', { x: cx, y: cy, 'font-family': 'IBM Plex Mono', 'font-size': 15, fill: 'rgba(242,238,230,0.85)', transform: `rotate(-90 ${cx} ${cy})`, 'dominant-baseline': 'middle' }).textContent = Math.pow(2, k / 12).toFixed(4);
+    el('line', { x1: cx, y1: y + h, x2: cx, y2: Y0 + 112, stroke: '#f2eee6', 'stroke-width': 0.8, 'stroke-dasharray': '2 4', opacity: 0.55 });
+  }
+  // the one semitone step, in red pencil
+  const ax = wx(0) + KW / 2, bx = wx(0) + KW + GAP / 2;
+  el('text', { x: wx(0) - 8, y: Y0 + 96, 'text-anchor': 'end', 'font-family': 'Cormorant Garamond', 'font-weight': 600, 'font-size': 30, fill: '#e8502e' }).textContent = '×¹²√2';
+  await fontsReady([
+    ['900 300px "Noto Serif SC"', '把一首歌拆到只剩数字'],
+    ['500 34px "Noto Serif SC"', 'EVA/紫罗兰永恒花园葬送的芙莉莲'],
+    ['400 20px "IBM Plex Mono"', 'ANIMENZ × 3 · 4K 0123456789.'],
+    ['600 30px "Cormorant Garamond"', '×¹²√2'],
+  ]);
+  grain({ seed: 31, opacity: 0.09 });
+  ready();
+</script>
+</body>
+</html>

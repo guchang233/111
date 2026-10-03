@@ -1,0 +1,40 @@
+@import url('/node_modules/@fontsource/noto-serif-sc/300.css');
+@import url('/node_modules/@fontsource/noto-serif-sc/400.css');
+@import url('/node_modules/@fontsource/noto-serif-sc/500.css');
+@import url('/node_modules/@fontsource/noto-serif-sc/700.css');
+@import url('/node_modules/@fontsource/noto-serif-sc/900.css');
+@import url('/node_modules/@fontsource/cormorant-garamond/400.css');
+@import url('/node_modules/@fontsource/cormorant-garamond/400-italic.css');
+@import url('/node_modules/@fontsource/cormorant-garamond/500.css');
+@import url('/node_modules/@fontsource/cormorant-garamond/600.css');
+@import url('/node_modules/@fontsource/cormorant-garamond/700.css');
+@import url('/node_modules/@fontsource/ibm-plex-mono/300.css');
+@import url('/node_modules/@fontsource/ibm-plex-mono/400.css');
+@import url('/node_modules/@fontsource/ibm-plex-mono/500.css');
+@import url('/node_modules/@fontsource/courier-prime/400.css');
+
+/* Design tokens — the whole film uses only these. */
+:root {
+  --ink: #0b0b0c;          /* dark scenes */
+  --ink-text: #ece7de;
+  --paper: #ece7dd;        /* the "teardown manual" scenes */
+  --paper-text: #171615;
+  --eva: #e8502e;          /* section accents, used sparingly */
+  --violet: #2f7d62;
+  --frieren: #cdb986;
+  --mark: #c3402e;         /* engineer's red pencil */
+  --serif-cn: 'Noto Serif SC', serif;
+  --serif-en: 'Cormorant Garamond', serif;
+  --mono: 'IBM Plex Mono', monospace;
+  --type: 'Courier Prime', monospace;
+}
+html, body { margin: 0; padding: 0; }
+body {
+  width: 1920px; height: 1080px; overflow: hidden; position: relative;
+  -webkit-font-smoothing: antialiased; text-rendering: geometricPrecision;
+  font-kerning: normal; font-synthesis: none;
+}
+.dark  { background: var(--ink);   color: var(--ink-text); }
+.paper { background: var(--paper); color: var(--paper-text); }
+canvas.grain, canvas.layer, svg.layer { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; }
+.abs { position: absolute; }

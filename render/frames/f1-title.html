@@ -1,0 +1,44 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="frame-size" content="1920x1080">
+<title>F1 · 主标题</title>
+<link rel="stylesheet" href="/render/lib/base.css">
+<style>
+  /* Homage to the Evangelion title cards: ultra-heavy Mincho, mixed
+     condensing, a tight left-hung block, white on black. */
+  .card { position: absolute; left: 180px; top: -18px; height: 1080px; display: flex; flex-direction: column; justify-content: center; }
+  .cn { font-family: var(--serif-cn); font-weight: 900; color: #f2eee6; line-height: 1; white-space: nowrap; transform-origin: 0 50%; letter-spacing: -0.01em; }
+  .l0 { font-size: 112px; transform: scaleX(0.72); margin-bottom: 22px; }
+  .l1 { font-size: 224px; transform: scaleX(0.58); margin-bottom: -4px; }
+  .l2 { font-size: 336px; transform: scaleX(0.58); margin-left: -8px; }
+  .en { font-family: var(--serif-en); font-weight: 700; font-size: 46px; letter-spacing: 0.01em; color: #f2eee6; margin-top: 34px; white-space: nowrap; transform: scaleX(0.9); transform-origin: 0 50%; font-variant-numeric: lining-nums; font-feature-settings: "lnum" 1; }
+  .en b { font-weight: 700; margin-right: 26px; }
+  .credit { position: absolute; right: 120px; bottom: 96px; font-family: var(--mono); font-size: 17px; letter-spacing: 0.14em; color: rgba(236,231,222,0.42); text-align: right; line-height: 1.9; }
+  .credit em { font-style: normal; color: var(--eva); }
+</style>
+</head>
+<body class="dark">
+  <div class="card">
+    <div class="cn l0">第零话</div>
+    <div class="cn l1">把一首歌</div>
+    <div class="cn l2">拆到只剩数字</div>
+    <div class="en"><b>EPISODE:0</b>TAKING A SONG APART, UNTIL ONLY NUMBERS REMAIN</div>
+  </div>
+  <div class="credit">
+    <div>PIANO ARRANGEMENTS <em>/</em> ANIMENZ</div>
+    <div>VISUALS &amp; ANALYSIS <em>/</em> COMPUTED, FRAME BY FRAME</div>
+  </div>
+<script type="module">
+  import { fontsReady, grain, ready } from '/render/lib/frame.js';
+  await fontsReady([
+    ['900 100px "Noto Serif SC"', '第零话把一首歌拆到只剩数字'],
+    ['700 40px "Cormorant Garamond"', 'EPISODE:0 TAKING A SONG APART, UNTIL ONLY NUMBERS REMAIN'],
+    ['400 16px "IBM Plex Mono"', 'PIANO ARRANGEMENTS / ANIMENZ VISUALS & ANALYSIS COMPUTED, FRAME BY FRAME'],
+  ]);
+  grain({ seed: 11, opacity: 0.1 });
+  ready();
+</script>
+</body>
+</html>

@@ -1,0 +1,32 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="frame-size" content="1920x1080">
+<title>F6 · 题词</title>
+<link rel="stylesheet" href="/render/lib/base.css">
+<style>
+  body.night { background: radial-gradient(ellipse 70% 80% at 60% 50%, #101317 0%, #090a0c 70%, #070809 100%); color: #ece7de; }
+  .q { position: absolute; top: 236px; right: 640px; writing-mode: vertical-rl; font-family: var(--serif-cn); font-weight: 300; font-size: 50px; letter-spacing: 0.34em; line-height: 2.3; color: #eee9e0; }
+  .who { position: absolute; top: 520px; right: 912px; writing-mode: vertical-rl; font-family: var(--serif-cn); font-weight: 400; font-size: 20px; letter-spacing: 0.42em; color: rgba(236,231,222,0.5); }
+  .dot { position: absolute; top: 486px; right: 917px; width: 9px; height: 9px; border: 1.2px solid var(--frieren); border-radius: 50%; }
+  .k { position: absolute; left: 120px; bottom: 84px; font-family: var(--mono); font-size: 12px; letter-spacing: 0.2em; color: rgba(236,231,222,0.34); }
+</style>
+</head>
+<body class="night">
+  <div class="q">为什么我没有想着，<br>多了解他一点呢。</div>
+  <span class="dot"></span>
+  <div class="who">芙莉莲　《葬送的芙莉莲》第一话</div>
+  <div class="k">EPIGRAPH 03 / 03 &nbsp;·&nbsp; STYLE FRAME</div>
+<script type="module">
+  import { fontsReady, grain, ready } from '/render/lib/frame.js';
+  await fontsReady([
+    ['300 50px "Noto Serif SC"', '为什么我没有想着，多了解他一点呢。'],
+    ['400 20px "Noto Serif SC"', '芙莉莲　《葬送的芙莉莲》第一话'],
+    ['400 12px "IBM Plex Mono"', 'EPIGRAPH 03 / 03 · STYLE FRAME'],
+  ]);
+  grain({ seed: 41, opacity: 0.1 });
+  ready();
+</script>
+</body>
+</html>

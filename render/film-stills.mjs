@@ -7,8 +7,9 @@ import { serve, ROOT } from './server.mjs';
 const args = process.argv.slice(2);
 const scale = args.includes('--scale') ? Number(args[args.indexOf('--scale') + 1]) : 1;
 const only = args.includes('--only') ? args[args.indexOf('--only') + 1] : '';
+const film = args.includes('--film') ? args[args.indexOf('--film') + 1] : 'film';
 const query = [only ? 'only=' + only : '', args.includes('--pure') ? 'pure' : ''].filter(Boolean).join('&');
-const times = args.filter((a, i) => !a.startsWith('--') && !['--scale', '--only'].includes(args[i - 1])).map(Number);
+const times = args.filter((a, i) => !a.startsWith('--') && !['--scale', '--only', '--film'].includes(args[i - 1])).map(Number);
 const out = path.join(ROOT, 'out/film-stills');
 fs.mkdirSync(out, { recursive: true });
 const server = await serve();
@@ -17,7 +18,7 @@ const page = await browser.newPage({ viewport: { width: 1920, height: 1080 }, de
 page.on('console', (m) => console.log('  [page]', m.text()));
 let failed = null;
 page.on('pageerror', (e) => { console.error('  [page error]', e.message); failed = e.message; });
-await page.goto(`http://127.0.0.1:${server.address().port}/film/index.html${query ? '?' + query : ''}`);
+await page.goto(`http://127.0.0.1:${server.address().port}/${film}/index.html${query ? '?' + query : ''}`);
 for (let i = 0; i < 240 && !failed; i++) {
   if (await page.evaluate(() => window.__ready === true)) break;
   await new Promise((r) => setTimeout(r, 250));

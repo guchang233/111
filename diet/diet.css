@@ -1,0 +1,18 @@
+@import url('/node_modules/@fontsource/noto-sans-sc/400.css');
+@import url('/node_modules/@fontsource/noto-sans-sc/700.css');
+@import url('/node_modules/@fontsource/noto-sans-sc/900.css');
+:root { --sans: 'Noto Sans SC', sans-serif; --red: #e5322d; --warm: #f1c58f; --iv: #ece7de; }
+#stage { position: absolute; left: 0; top: 0; width: 1920px; height: 1080px; overflow: hidden; background: #000; }
+.layer { position: absolute; inset: 0; overflow: hidden; background: #0a0a0b; color: var(--iv); }
+.layer.warm { background: radial-gradient(ellipse 70% 70% at 50% 55%, #1b130d 0%, #0e0a08 70%, #0a0807 100%); }
+.layer > canvas { position: absolute; inset: 0; width: 1920px; height: 1080px; }
+.ui, #caps { position: absolute; inset: 0; }
+.a { position: absolute; white-space: nowrap; }
+.cap { position: absolute; left: 0; right: 0; text-align: center; white-space: nowrap; font-family: var(--serif-cn); font-weight: 400; letter-spacing: 0.08em; color: var(--iv); }
+.cap.kicker { left: 120px; right: auto; top: 96px; text-align: left; font-family: var(--sans); font-weight: 500; font-size: 18px; letter-spacing: 0.32em; color: rgba(236,231,222,0.5); }
+.cap.warm { color: #f3e6d4; }
+.cap.kicker.warm { color: rgba(241,197,143,0.6); }
+.cap .r { color: var(--red); }
+.num { font-family: var(--mono); font-weight: 300; letter-spacing: -0.01em; }
+.heavy { font-family: var(--sans); font-weight: 900; letter-spacing: 0; line-height: 1; }
+.lab { font-family: var(--sans); font-weight: 500; font-size: 18px; letter-spacing: 0.3em; color: rgba(236,231,222,0.5); }

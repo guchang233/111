@@ -1,0 +1,38 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="frame-size" content="1920x1080">
+<title>越饿越胖 封面</title>
+<link rel="stylesheet" href="/diet/diet.css">
+<link rel="stylesheet" href="/render/lib/base.css">
+<style>
+  body { width: 1920px; background: #0a0a0b; }
+  .t { position: absolute; left: 120px; top: 330px; font-family: var(--sans); font-weight: 900; font-size: 250px; line-height: 1; color: #f2eee6; white-space: nowrap; letter-spacing: 0.02em; }
+  .k { position: absolute; left: 120px; top: 240px; font-family: var(--sans); font-weight: 500; font-size: 26px; letter-spacing: 0.4em; color: rgba(236,231,222,0.6); }
+  .k b { color: var(--red); font-weight: 700; }
+  .rd { position: absolute; left: 1380px; font-family: var(--mono); font-weight: 300; line-height: 1; white-space: nowrap; }
+  .lab { font-family: var(--sans); font-weight: 500; font-size: 22px; letter-spacing: 0.3em; color: rgba(236,231,222,0.55); margin-bottom: 12px; }
+  .bar { position: absolute; left: 120px; top: 640px; width: 140px; height: 8px; background: var(--red); }
+</style>
+</head>
+<body>
+  <svg class="layer" id="g" viewBox="0 0 1920 1080" style="position:absolute;inset:0"></svg>
+  <div class="k">16 岁 &nbsp;·&nbsp; 体脂率 <b>48%</b></div>
+  <div class="t">越饿越胖</div>
+  <div class="bar"></div>
+  <div class="rd" style="top:250px"><div class="lab">体重 ↓</div><div style="font-size:150px;color:#ece7de">45.3<span style="font-size:0.4em"> kg</span></div></div>
+  <div class="rd" style="top:560px"><div class="lab">体脂率 ↑</div><div style="font-size:150px;color:#e5322d">48<span style="font-size:0.4em">%</span></div></div>
+<script type="module">
+  import { fontsReady, grain, ready } from '/render/lib/frame.js';
+  const NS = 'http://www.w3.org/2000/svg', svg = document.getElementById('g');
+  // the two traces crossing: weight falls, fat rises
+  const path = (d, c, w) => { const p = document.createElementNS(NS, 'path'); p.setAttribute('d', d); p.setAttribute('stroke', c); p.setAttribute('stroke-width', w); p.setAttribute('fill', 'none'); svg.appendChild(p); };
+  path('M 1380 920 C 1500 930, 1600 960, 1800 1000', 'rgba(236,231,222,0.85)', 3);
+  path('M 1380 1010 C 1520 1000, 1640 960, 1800 880', '#e5322d', 4);
+  await fontsReady([['900 200px "Noto Sans SC"', '越饿越胖'], ['500 26px "Noto Sans SC"', '16岁体脂率重↓↑·'], ['700 26px "Noto Sans SC"', '48%'], ['300 100px "IBM Plex Mono"', '45.3kg48%']]);
+  grain({ seed: 9, opacity: 0.08 });
+  ready();
+</script>
+</body>
+</html>
